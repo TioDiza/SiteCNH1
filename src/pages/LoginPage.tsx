@@ -40,6 +40,18 @@ const LoginPage: React.FC = () => {
   const [cpf, setCpf] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
+  const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const formattedCpf = value
+      .replace(/\D/g, '') // Remove todos os caracteres não numéricos
+      .replace(/(\d{3})(\d)/, '$1.$2') // Adiciona ponto após o 3º dígito
+      .replace(/(\d{3})(\d)/, '$1.$2') // Adiciona ponto após o 6º dígito
+      .replace(/(\d{3})(\d{1,2})$/, '$1-$2'); // Adiciona traço antes dos últimos 2 dígitos
+    
+    // Limita o tamanho ao máximo de um CPF formatado
+    setCpf(formattedCpf.substring(0, 14));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!cpf) {
@@ -93,11 +105,12 @@ const LoginPage: React.FC = () => {
               <input 
                 type="text" 
                 id="cpf"
-                placeholder="Digite seu CPF"
+                placeholder="000.000.000-00"
                 value={cpf}
-                onChange={(e) => setCpf(e.target.value)}
+                onChange={handleCpfChange}
                 className="w-full p-3 border border-gray-400 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 disabled={isLoading}
+                maxLength={14}
               />
             </div>
             <button 
