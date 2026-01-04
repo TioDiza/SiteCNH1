@@ -287,21 +287,16 @@ const App: React.FC = () => {
         {/* Content Section */}
         <div className="space-y-8 text-gray-700 leading-relaxed text-lg">
           
-          {/* Mock Video Container */}
-          <div className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden group">
-            <img 
-              src="https://picsum.photos/seed/govvideo/800/450" 
-              alt="Vídeo Placeholder" 
-              className="w-full h-full object-cover opacity-60"
-            />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <button className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
-                <div className="w-0 h-0 border-t-[10px] border-t-transparent border-l-[18px] border-l-[#004381] border-b-[10px] border-b-transparent ml-1"></div>
-              </button>
-            </div>
-            <div className="absolute bottom-4 left-4 right-4 bg-black/50 text-white p-2 text-xs rounded">
-              Depoimento: Ministro dos Transportes visita a Paraíba para entrega das primeiras habilitações.
-            </div>
+          {/* Video Container */}
+          <div className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden shadow-lg">
+            <iframe
+              className="absolute top-0 left-0 w-full h-full"
+              src="https://www.youtube.com/embed/vDelxCDmvNo"
+              title="YouTube video player"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            ></iframe>
           </div>
 
           {/* Testimonial Box */}
