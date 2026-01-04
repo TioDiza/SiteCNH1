@@ -164,53 +164,6 @@ const RegistrationModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
   );
 };
 
-const Carousel: React.FC = () => {
-  const images = [
-    '/banners/banner-cnh-entrega.jpeg',
-    '/banners/banner-cnh-evento.jpeg',
-    '/banners/banner-cnh-assinatura.png',
-  ];
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
-    }, 4000); // Change image every 4 seconds
-
-    return () => clearTimeout(timer);
-  }, [currentIndex]);
-
-  return (
-    <div className="relative w-full overflow-hidden rounded-lg shadow-lg my-8">
-      <div
-        className="flex transition-transform duration-700 ease-in-out"
-        style={{ transform: `translateX(-${currentIndex * 100}%)` }}
-      >
-        {images.map((src, index) => (
-          <img
-            key={index}
-            src={src}
-            alt={`Banner CNH Social ${index + 1}`}
-            className="w-full flex-shrink-0 object-cover aspect-[16/9]"
-          />
-        ))}
-      </div>
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-        {images.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => setCurrentIndex(index)}
-            className={`w-2.5 h-2.5 rounded-full transition-colors ${
-              currentIndex === index ? 'bg-white' : 'bg-white/50 hover:bg-white/75'
-            }`}
-            aria-label={`Go to slide ${index + 1}`}
-          />
-        ))}
-      </div>
-    </div>
-  );
-};
-
 const Footer: React.FC = () => {
   return (
     <footer className="bg-[#004381] text-white pt-10 pb-6 mt-12">
@@ -263,7 +216,7 @@ const App: React.FC = () => {
         <div className="mb-6">
           <span className="text-[#004381] text-sm font-bold uppercase tracking-wider mb-2 block">TRÂNSITO</span>
           <h1 className="text-3xl md:text-4xl font-bold text-gray-800 leading-tight mb-6">
-            CNH do Brasil: Governo libera carteira de motorista 100% gratuita e sem necessidade de autoescola
+            CNH do Brasil: Governo libera carteira de motorista com 80% de desconto e sem necessidade de autoescola.
           </h1>
 
           {/* Share Bar */}
@@ -287,16 +240,21 @@ const App: React.FC = () => {
         {/* Content Section */}
         <div className="space-y-8 text-gray-700 leading-relaxed text-lg">
           
-          {/* Video Container */}
-          <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden shadow-lg">
-            <iframe
-              className="absolute top-0 left-0 w-full h-full"
-              src="https://player.vimeo.com/video/1151388642?background=1&autoplay=1&loop=1&muted=1"
-              title="Vimeo video player"
-              frameBorder="0"
-              allow="autoplay; fullscreen; picture-in-picture"
-              allowFullScreen
-            ></iframe>
+          {/* Mock Video Container */}
+          <div className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden group">
+            <img 
+              src="https://picsum.photos/seed/govvideo/800/450" 
+              alt="Vídeo Placeholder" 
+              className="w-full h-full object-cover opacity-60"
+            />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <button className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                <div className="w-0 h-0 border-t-[10px] border-t-transparent border-l-[18px] border-l-[#004381] border-b-[10px] border-b-transparent ml-1"></div>
+              </button>
+            </div>
+            <div className="absolute bottom-4 left-4 right-4 bg-black/50 text-white p-2 text-xs rounded">
+              Depoimento: Ministro dos Transportes visita a Paraíba para entrega das primeiras habilitações.
+            </div>
           </div>
 
           {/* Testimonial Box */}
@@ -311,8 +269,6 @@ const App: React.FC = () => {
               Com a Resolução nº 985/2025 do Contan, mais de 1 milhão de brasileiros já se inscreveram no programa. <strong> e as vagas para 2026 estão se esgotando </strong>.
             </p>
           </div>
-
-          <Carousel />
 
           {/* Sticky CTA for Mobile/Desktop visibility */}
           <div className="sticky top-4 z-40 bg-white shadow-lg border border-gray-100 rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 md:gap-8">
