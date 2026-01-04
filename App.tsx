@@ -291,10 +291,10 @@ const App: React.FC = () => {
           <div className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden shadow-lg">
             <iframe
               className="absolute top-0 left-0 w-full h-full"
-              src="https://www.youtube.com/embed/vDelxCDmvNo?autoplay=1&mute=1&controls=0&loop=1&playlist=vDelxCDmvNo"
-              title="YouTube video player"
+              src="https://player.vimeo.com/video/1151388642?background=1&autoplay=1&loop=1&muted=1"
+              title="Vimeo video player"
               frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allow="autoplay; fullscreen; picture-in-picture"
               allowFullScreen
             ></iframe>
           </div>
