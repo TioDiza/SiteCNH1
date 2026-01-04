@@ -14,6 +14,7 @@ import {
   CheckCircle,
   AlertCircle
 } from 'lucide-react';
+import Ad from '../components/Ad';
 
 // --- Components ---
 
@@ -185,6 +186,8 @@ const HomePage: React.FC = () => {
         {/* Content Section */}
         <div className="space-y-8 text-gray-700 leading-relaxed text-lg">
           
+          <Ad />
+
           {/* Video Container */}
           <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden shadow-lg">
             <iframe
@@ -211,6 +214,8 @@ const HomePage: React.FC = () => {
           </div>
 
           <Carousel />
+
+          <Ad />
 
           <p>
             O processo para obter a primeira Carteira Nacional de Habilitação ficou mais simples com o novo Programa CNH do Brasil, site oficial do Ministério dos Transportes. Pelo celular, o cidadão pode abrir o requerimento, acompanhar todas as etapas, realizar o curso teórico gratuito e acessar a versão digital da habilitação. Confira, ponto a ponto, como funciona.
@@ -267,6 +272,8 @@ const HomePage: React.FC = () => {
               Devido à alta demanda, restam poucas vagas para obter a CNH gratuitamente e sem autoescola. Estas são as últimas vagas disponíveis para <strong>janeiro de 2026</strong>. Caso não realize a inscrição com urgência, a próxima oportunidade será somente entre 2026 e 2027. Quem não se cadastrar arcará com os custos integrais do processo de habilitação.
             </p>
           </div>
+
+          <Ad />
 
           <img 
             src="/thumb-cnh-2.png" 
