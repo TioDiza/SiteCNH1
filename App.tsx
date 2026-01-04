@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { 
   Search, 
@@ -24,7 +23,7 @@ const Header: React.FC = () => {
       <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
         <div className="flex items-center gap-4">
           <img 
-            src="https://www.gov.br/governodigital/pt-br/identidade-visual-do-governo-federal/marca-govbr/marca-gov-br/govbr-colorido-positivo.png" 
+            src="/Gov.br_logo.svg.png" 
             alt="gov.br" 
             className="h-8 md:h-10"
           />
