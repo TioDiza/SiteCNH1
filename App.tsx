@@ -370,6 +370,12 @@ const App: React.FC = () => {
             </p>
           </div>
 
+          <img 
+            src="/thumb-cnh-2.png" 
+            alt="Mulher mostrando CNH Digital no celular" 
+            className="w-full rounded-lg shadow-lg"
+          />
+
           {/* Section 2 */}
           <div>
             <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2">
