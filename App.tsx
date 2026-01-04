@@ -164,6 +164,53 @@ const RegistrationModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({
   );
 };
 
+const Carousel: React.FC = () => {
+  const images = [
+    '/banners/banner-cnh-entrega.jpeg',
+    '/banners/banner-cnh-evento.jpeg',
+    '/banners/banner-cnh-assinatura.png',
+  ];
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
+    }, 4000); // Change image every 4 seconds
+
+    return () => clearTimeout(timer);
+  }, [currentIndex]);
+
+  return (
+    <div className="relative w-full overflow-hidden rounded-lg shadow-lg my-8">
+      <div
+        className="flex transition-transform duration-700 ease-in-out"
+        style={{ transform: `translateX(-${currentIndex * 100}%)` }}
+      >
+        {images.map((src, index) => (
+          <img
+            key={index}
+            src={src}
+            alt={`Banner CNH Social ${index + 1}`}
+            className="w-full flex-shrink-0 object-cover aspect-[16/9]"
+          />
+        ))}
+      </div>
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+        {images.map((_, index) => (
+          <button
+            key={index}
+            onClick={() => setCurrentIndex(index)}
+            className={`w-2.5 h-2.5 rounded-full transition-colors ${
+              currentIndex === index ? 'bg-white' : 'bg-white/50 hover:bg-white/75'
+            }`}
+            aria-label={`Go to slide ${index + 1}`}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
+
 const Footer: React.FC = () => {
   return (
     <footer className="bg-[#004381] text-white pt-10 pb-6 mt-12">
@@ -269,6 +316,8 @@ const App: React.FC = () => {
               Com a Resolução nº 985/2025 do Contan, mais de 1 milhão de brasileiros já se inscreveram no programa. <strong> e as vagas para 2026 estão se esgotando </strong>.
             </p>
           </div>
+
+          <Carousel />
 
           {/* Sticky CTA for Mobile/Desktop visibility */}
           <div className="sticky top-4 z-40 bg-white shadow-lg border border-gray-100 rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 md:gap-8">
