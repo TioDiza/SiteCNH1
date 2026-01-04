@@ -288,7 +288,7 @@ const App: React.FC = () => {
         <div className="space-y-8 text-gray-700 leading-relaxed text-lg">
           
           {/* Video Container */}
-          <div className="relative aspect-video bg-white rounded-lg overflow-hidden shadow-lg">
+          <div className="relative aspect-video bg-[#f8f8f8] rounded-lg overflow-hidden shadow-lg">
             <iframe
               className="absolute top-0 left-0 w-full h-full"
               src="https://player.vimeo.com/video/1151388642?background=1&autoplay=1&loop=1&muted=1"
