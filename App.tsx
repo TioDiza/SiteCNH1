@@ -290,7 +290,7 @@ const App: React.FC = () => {
           {/* Video Container */}
           <div className="relative aspect-video bg-gray-900 rounded-lg overflow-hidden shadow-lg">
             <iframe
-              className="absolute top-0 left-0 w-full h-full"
+              className="absolute top-0 left-0 w-full h-full scale-[3.2]"
               src="https://player.vimeo.com/video/1151388642?background=1&autoplay=1&loop=1&muted=1"
               title="Vimeo video player"
               frameBorder="0"
