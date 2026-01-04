@@ -314,6 +314,10 @@ const App: React.FC = () => {
 
           <Carousel />
 
+          <p>
+            O processo para obter a primeira Carteira Nacional de Habilitação ficou mais simples com o novo Programa CNH do Brasil, site oficial do Ministério dos Transportes. Pelo celular, o cidadão pode abrir o requerimento, acompanhar todas as etapas, realizar o curso teórico gratuito e acessar a versão digital da habilitação. Confira, ponto a ponto, como funciona.
+          </p>
+
           {/* Sticky CTA for Mobile/Desktop visibility */}
           <div className="sticky top-4 z-40 bg-white shadow-lg border border-gray-100 rounded-xl p-4 flex flex-col md:flex-row items-center justify-between gap-4 md:gap-8">
             <div className="flex-1">
