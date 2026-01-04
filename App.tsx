@@ -412,13 +412,13 @@ const App: React.FC = () => {
         </div>
       </main>
 
-      {/* Floating V Libras Button (Accessibility Mockup) */}
+      {/* Floating ba.gov.br Button */}
       <div className="fixed right-4 top-1/2 -translate-y-1/2 z-30">
-        <div className="w-12 h-12 bg-[#004381] rounded-full flex items-center justify-center shadow-lg border-2 border-white cursor-pointer hover:scale-105 transition-transform">
+        <div className="w-12 h-12 bg-white rounded-full flex items-center justify-center shadow-lg border-2 border-white cursor-pointer hover:scale-105 transition-transform overflow-hidden">
           <img 
-            src="https://vlibras.gov.br/assets/images/widget/icon.png" 
-            alt="V Libras" 
-            className="w-8 h-8"
+            src="/ba-gov-br-logo.png" 
+            alt="ba.gov.br" 
+            className="w-full h-full object-cover"
           />
         </div>
       </div>
