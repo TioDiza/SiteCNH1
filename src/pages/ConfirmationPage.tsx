@@ -88,6 +88,8 @@ const ConfirmationPage: React.FC = () => {
         return null; // ou um loader
     }
 
+    const genderDisplay = userData.gender === 'M' ? 'Masculino' : userData.gender === 'F' ? 'Feminino' : userData.gender;
+
     return (
         <div className="bg-gray-50 min-h-screen">
             <ConfirmationHeader />
@@ -101,7 +103,7 @@ const ConfirmationPage: React.FC = () => {
                         <InfoRow label="Nome Completo" value={userData.name} />
                         <InfoRow label="Data de Nascimento" value={userData.birthDate} />
                         {age !== null && <InfoRow label="Idade" value={`${age} anos`} />}
-                        <InfoRow label="Sexo" value={userData.gender} />
+                        <InfoRow label="Sexo" value={genderDisplay} />
 
                         <div className="pt-4">
                              <button 
