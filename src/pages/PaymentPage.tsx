@@ -7,7 +7,7 @@ const PaymentHeader: React.FC<{ userName?: string }> = ({ userName }) => (
     <header className="bg-white border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-4">
             <div className="py-3 flex items-center justify-between">
-                <img src="/Gov.br_logo.svg.png" alt="gov.br" className="h-8 md:h-10" />
+                <img src="/Gov.br_logo.svg.png" alt="gov.br" className="h-8 md-h-10" />
                 <button className="flex items-center gap-2 bg-[#004381] text-white px-4 py-1.5 rounded-full text-sm font-medium hover:bg-blue-900 transition-colors">
                     <User size={18} />
                     <span>{userName || 'Entrar'}</span>
@@ -27,7 +27,7 @@ const PaymentPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [isCopied, setIsCopied] = useState(false);
 
-    const FEE_AMOUNT = 5.00;
+    const FEE_AMOUNT = 87.90;
 
     useEffect(() => {
         let data: { name: string; cpf: string; leadId: string; email: string; phone: string; } | null = null;
