@@ -44,9 +44,11 @@ const CategorySelectionHeader: React.FC<{ userName?: string }> = ({ userName }) 
 
 const BotMessage: React.FC<{ children: React.ReactNode }> = ({ children }) => (
     <div className="flex items-start gap-3 animate-fade-in">
-        <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-            G
-        </div>
+        <img 
+            src="/gov-br-avatar.jpg" 
+            alt="Atendimento Gov.br" 
+            className="w-10 h-10 rounded-full flex-shrink-0"
+        />
         <div>
             <p className="font-bold text-gray-800">Atendimento Gov.br</p>
             <div className="bg-[#004381] text-white p-4 rounded-lg rounded-tl-none mt-1 max-w-md">
@@ -66,9 +68,11 @@ const UserMessage: React.FC<{ children: React.ReactNode }> = ({ children }) => (
 
 const LoadingMessage: React.FC = () => (
      <div className="flex items-start gap-3 animate-fade-in">
-        <div className="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white font-bold text-lg flex-shrink-0">
-            G
-        </div>
+        <img 
+            src="/gov-br-avatar.jpg" 
+            alt="Atendimento Gov.br" 
+            className="w-10 h-10 rounded-full flex-shrink-0"
+        />
         <div>
              <p className="font-bold text-gray-800">Atendimento Gov.br</p>
             <div className="bg-[#004381] text-white p-4 rounded-lg rounded-tl-none mt-1 inline-flex items-center gap-2">
