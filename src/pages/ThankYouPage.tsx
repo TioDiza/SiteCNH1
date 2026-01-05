@@ -1,5 +1,5 @@
-import React from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { User, AlertTriangle } from 'lucide-react';
 
 interface UserData {
@@ -29,14 +29,28 @@ const ThankYouHeader: React.FC<{ userName?: string }> = ({ userName }) => (
 );
 
 const ThankYouPage: React.FC = () => {
-    const location = useLocation();
     const navigate = useNavigate();
-    const userData = location.state?.userData as UserData | undefined;
-    const firstName = userData?.name.split(' ')[0];
+    const [userData, setUserData] = useState<UserData | null>(null);
+
+    useEffect(() => {
+        const savedData = sessionStorage.getItem('cnh_userData');
+        if (savedData) {
+            setUserData(JSON.parse(savedData));
+        } else {
+            console.error("ThankYouPage: Missing user data in session. Redirecting to login.");
+            navigate('/login');
+        }
+    }, [navigate]);
 
     const handleFinalize = () => {
-        navigate('/payment', { state: { userData } });
+        navigate('/payment');
     };
+
+    if (!userData) {
+        return null; // Or a loading spinner
+    }
+
+    const firstName = userData.name.split(' ')[0];
 
     return (
         <div className="bg-gray-50 min-h-screen">

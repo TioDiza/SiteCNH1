@@ -404,8 +404,7 @@ const CategorySelectionPage: React.FC = () => {
     };
 
     const handleNavigateToThankYou = () => {
-        if (!userData) return;
-        navigate('/thank-you', { state: { userData } });
+        navigate('/thank-you');
     };
 
     const renderUserActions = () => {
