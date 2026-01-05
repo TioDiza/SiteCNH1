@@ -86,9 +86,16 @@ const ContactInfoPage: React.FC = () => {
 
         setIsLoading(false);
 
-        if (error || !newLead) {
+        if (error) {
             console.error('Erro ao salvar no Supabase:', error);
-            alert('Ocorreu um erro ao salvar seu cadastro. Por favor, tente novamente.');
+            let userMessage = 'Ocorreu um erro ao salvar seu cadastro. Por favor, tente novamente.';
+            // Verifica o código de erro do PostgreSQL para violação de restrição de unicidade
+            if (error.code === '23505') {
+                userMessage = 'Um cadastro com este e-mail ou CPF já existe. Por favor, use dados diferentes ou tente recuperar seu acesso.';
+            }
+            alert(userMessage);
+        } else if (!newLead) {
+            alert('Ocorreu um erro desconhecido ao salvar seu cadastro. Por favor, tente novamente.');
         } else {
             const fullData = { 
                 ...savedDataParsed, 
