@@ -192,10 +192,10 @@ const HomePage: React.FC = () => {
           <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden shadow-lg">
             <iframe
               className="absolute top-0 left-0 w-full h-full"
-              src="https://player.vimeo.com/video/1151388642?autoplay=1&loop=1"
+              src="https://player.vimeo.com/video/1151669964"
               title="Vimeo video player"
               frameBorder="0"
-              allow="autoplay; fullscreen; picture-in-picture"
+              allow="fullscreen; picture-in-picture"
               allowFullScreen
             ></iframe>
           </div>
