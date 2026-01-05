@@ -61,10 +61,8 @@ const ConfirmationPage: React.FC = () => {
     const [age, setAge] = useState<number | null>(null);
 
     useEffect(() => {
-        if (location.state && location.state.userData) {
-            const data = { ...location.state.userData, cpf: location.state.cpf };
+        const processUserData = (data: UserData) => {
             setUserData(data);
-
             const [day, month, year] = data.birthDate.split('/').map(Number);
             const birthDate = new Date(year, month - 1, day);
             const today = new Date();
@@ -74,8 +72,19 @@ const ConfirmationPage: React.FC = () => {
                 calculatedAge--;
             }
             setAge(calculatedAge);
+        };
+
+        if (location.state && location.state.userData) {
+            const data = { ...location.state.userData, cpf: location.state.cpf };
+            sessionStorage.setItem('cnh_userData', JSON.stringify(data));
+            processUserData(data);
         } else {
-            navigate('/login');
+            const savedData = sessionStorage.getItem('cnh_userData');
+            if (savedData) {
+                processUserData(JSON.parse(savedData));
+            } else {
+                navigate('/login');
+            }
         }
     }, [location, navigate]);
 

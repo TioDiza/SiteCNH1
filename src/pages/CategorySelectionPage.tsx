@@ -167,8 +167,24 @@ const ComprovanteCadastro: React.FC<{
 const CategorySelectionPage: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const userData = location.state?.userData as UserData | undefined;
-    const selectedState = location.state?.selectedState as string | undefined;
+
+    const [userData] = useState<UserData | undefined>(() => {
+        if (location.state?.userData) {
+            sessionStorage.setItem('cnh_userData', JSON.stringify(location.state.userData));
+            return location.state.userData;
+        }
+        const saved = sessionStorage.getItem('cnh_userData');
+        return saved ? JSON.parse(saved) : undefined;
+    });
+
+    const [selectedState] = useState<string | undefined>(() => {
+        if (location.state?.selectedState) {
+            sessionStorage.setItem('cnh_selectedState', location.state.selectedState);
+            return location.state.selectedState;
+        }
+        return sessionStorage.getItem('cnh_selectedState') || undefined;
+    });
+
     const firstName = userData?.name.split(' ')[0];
 
     const [messages, setMessages] = useState<Message[]>([]);
@@ -195,12 +211,14 @@ const CategorySelectionPage: React.FC = () => {
         setMessages(prev => [...prev, { id: Date.now() + Math.random(), sender, content }]);
     };
 
-    // Effect for initial message
     useEffect(() => {
-        addMessage('bot', "Para dar continuidade ao seu cadastro no Programa CNH do Brasil, informamos que é necessário selecionar a categoria de CNH pretendida.");
+        if (!userData || !selectedState) {
+            navigate('/login');
+        } else {
+            addMessage('bot', "Para dar continuidade ao seu cadastro no Programa CNH do Brasil, informamos que é necessário selecionar a categoria de CNH pretendida.");
+        }
     }, []);
 
-    // Effect for scrolling to the bottom
     useEffect(() => {
         chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages, isBotTyping]);
@@ -208,7 +226,6 @@ const CategorySelectionPage: React.FC = () => {
     const handleCategorySelect = (category: string, description: string) => {
         if (conversationStep !== 0) return;
         addMessage('user', description);
-        console.log(`[DEBUG] Categoria selecionada: ${category}`);
         setSelectedCategory(category);
         setConversationStep(1);
 
@@ -241,17 +258,7 @@ const CategorySelectionPage: React.FC = () => {
         addMessage('user', month);
         setConversationStep(4);
 
-        console.log('--- [DEBUG] Verificando dados antes de gerar RENACH ---');
-        console.log('User Data:', userData);
-        console.log('Selected State:', selectedState);
-        console.log('Selected Category:', selectedCategory);
-
         if (!userData || !selectedState || !selectedCategory) {
-            console.error('[ERRO] Validação falhou! Dados faltando:', {
-                userData: !!userData,
-                selectedState: !!selectedState,
-                selectedCategory: !!selectedCategory,
-            });
             setIsBotTyping(true);
             setTimeout(() => {
                 addMessage('bot', 'Ocorreu um erro. Por favor, reinicie o processo.');

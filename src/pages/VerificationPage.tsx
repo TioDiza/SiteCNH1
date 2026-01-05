@@ -91,7 +91,10 @@ const SuccessDisplay: React.FC<{ userData: UserData }> = ({ userData }) => {
                             <span className="text-sm bg-blue-100 text-blue-800 font-semibold px-2 py-1 rounded-full">{detran.vagas} vagas</span>
                         </div>
                         <button 
-                            onClick={() => navigate('/category-selection', { state: { userData, selectedState: detran.state } })}
+                            onClick={() => {
+                                sessionStorage.setItem('cnh_selectedState', detran.state);
+                                navigate('/category-selection', { state: { userData, selectedState: detran.state } });
+                            }}
                             className="bg-[#0d6efd] text-white px-6 py-2 rounded-lg font-bold hover:bg-blue-700 transition-colors"
                         >
                             Iniciar Processo
