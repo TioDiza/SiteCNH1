@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { User, CheckCircle, Loader2 } from 'lucide-react';
 
-const VerificationHeader: React.FC = () => (
+const VerificationHeader: React.FC<{ userName?: string }> = ({ userName }) => (
     <header className="bg-white border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-4">
             <div className="py-3 flex items-center justify-between">
                 <img src="/Gov.br_logo.svg.png" alt="gov.br" className="h-8 md:h-10" />
                 <button className="flex items-center gap-2 bg-[#004381] text-white px-4 py-1.5 rounded-full text-sm font-medium hover:bg-blue-900 transition-colors">
                     <User size={18} />
-                    <span>Entrar</span>
+                    <span>{userName || 'Entrar'}</span>
                 </button>
             </div>
         </div>
@@ -135,9 +135,11 @@ const VerificationPage: React.FC = () => {
 
     if (!userData) return null;
 
+    const firstName = userData?.name.split(' ')[0];
+
     return (
         <div className="bg-gray-50 min-h-screen">
-            <VerificationHeader />
+            <VerificationHeader userName={firstName} />
             <main className="max-w-3xl mx-auto px-4 py-12">
                 <div className="bg-white p-8 rounded-lg shadow-md border border-gray-200">
                     <UserInfo userData={userData} />

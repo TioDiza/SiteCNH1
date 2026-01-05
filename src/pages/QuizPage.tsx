@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { User } from 'lucide-react';
 
-const QuizHeader: React.FC = () => (
+const QuizHeader: React.FC<{ userName?: string }> = ({ userName }) => (
     <header className="bg-white border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-4">
             <div className="py-3 flex items-center justify-between">
@@ -16,7 +16,7 @@ const QuizHeader: React.FC = () => (
                 <div className="flex items-center gap-2">
                     <button className="flex items-center gap-2 bg-[#004381] text-white px-4 py-1.5 rounded-full text-sm font-medium hover:bg-blue-900 transition-colors">
                         <User size={18} />
-                        <span>Entrar</span>
+                        <span>{userName || 'Entrar'}</span>
                     </button>
                 </div>
             </div>
@@ -40,6 +40,9 @@ const QuizPage: React.FC = () => {
     const [selectedOption, setSelectedOption] = useState<string | null>(null);
     const [answers, setAnswers] = useState<Record<number, string>>({});
 
+    const userData = location.state?.userData as { name: string } | undefined;
+    const firstName = userData?.name.split(' ')[0];
+
     const currentQuestion = quizQuestions[currentQuestionIndex];
     const progress = ((currentQuestionIndex + 1) / quizQuestions.length) * 100;
 
@@ -52,7 +55,6 @@ const QuizPage: React.FC = () => {
             if (currentQuestionIndex < quizQuestions.length - 1) {
                 setCurrentQuestionIndex(currentQuestionIndex + 1);
             } else {
-                const userData = location.state?.userData;
                 navigate('/contact-info', { state: { answers: newAnswers, userData: userData } });
             }
         } else {
@@ -62,7 +64,7 @@ const QuizPage: React.FC = () => {
 
     return (
         <div className="bg-gray-50 min-h-screen">
-            <QuizHeader />
+            <QuizHeader userName={firstName} />
             <main className="max-w-2xl mx-auto px-4 py-12">
                 <div className="bg-white p-8 rounded-lg shadow-md border border-gray-200">
                     <div className="mb-8">

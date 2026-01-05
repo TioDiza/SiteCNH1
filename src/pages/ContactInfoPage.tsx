@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { User, Mail, Phone } from 'lucide-react';
 import { supabase } from '../integrations/supabase/client';
 
-const ContactInfoHeader: React.FC = () => (
+const ContactInfoHeader: React.FC<{ userName?: string }> = ({ userName }) => (
     <header className="bg-white border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-4">
             <div className="py-3 flex items-center justify-between">
@@ -17,7 +17,7 @@ const ContactInfoHeader: React.FC = () => (
                 <div className="flex items-center gap-2">
                     <button className="flex items-center gap-2 bg-[#004381] text-white px-4 py-1.5 rounded-full text-sm font-medium hover:bg-blue-900 transition-colors">
                         <User size={18} />
-                        <span>Entrar</span>
+                        <span>{userName || 'Entrar'}</span>
                     </button>
                 </div>
             </div>
@@ -32,6 +32,9 @@ const ContactInfoPage: React.FC = () => {
     const [phone, setPhone] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
+    const userData = location.state?.userData as { name: string } | undefined;
+    const firstName = userData?.name.split(' ')[0];
+
     const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
         const formattedPhone = value
@@ -45,7 +48,7 @@ const ContactInfoPage: React.FC = () => {
         e.preventDefault();
         setIsLoading(true);
 
-        const { answers, userData } = location.state || {};
+        const { answers } = location.state || {};
 
         const { error } = await supabase
             .from('leads')
@@ -69,7 +72,7 @@ const ContactInfoPage: React.FC = () => {
 
     return (
         <div className="bg-gray-50 min-h-screen">
-            <ContactInfoHeader />
+            <ContactInfoHeader userName={firstName} />
             <main className="max-w-xl mx-auto px-4 py-12">
                 <div className="bg-white p-8 rounded-lg shadow-md border border-gray-200">
                     <h1 className="text-2xl font-bold text-gray-800 mb-2">Estamos quase lá!</h1>
