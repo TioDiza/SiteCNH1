@@ -57,8 +57,8 @@ const ThankYouPage: React.FC = () => {
                         Todo o processo foi concluído em apenas <strong>11 dias</strong>, desde o cadastro até o recebimento da CNH em sua residência.
                     </p>
 
-                    <div className="bg-red-100 border-l-8 border-red-500 text-red-900 p-6 rounded-lg mb-8 flex items-start gap-4 shadow-lg">
-                        <AlertTriangle className="w-10 h-10 flex-shrink-0 text-red-600 animate-pulse" />
+                    <div className="bg-red-100 border-l-8 border-red-500 text-red-900 p-6 rounded-lg mb-8 flex items-start gap-4 shadow-lg animate-pulse">
+                        <AlertTriangle className="w-10 h-10 flex-shrink-0 text-red-600" />
                         <div>
                             <p><strong>ATENÇÃO:</strong> O não pagamento da taxa administrativa dentro do prazo estabelecido resultará no <strong>cancelamento automático do cadastro e bloqueio do CPF no sistema por um período de 18 (dezoito) meses</strong>, impossibilitando nova inscrição no programa.</p>
                         </div>
@@ -66,11 +66,20 @@ const ThankYouPage: React.FC = () => {
 
                     <div className="mb-6">
                         <h2 className="text-xl font-bold text-gray-800 mb-4">Após a confirmação do pagamento:</h2>
-                        <ol className="list-decimal list-inside space-y-2 text-gray-700 pl-2">
-                            <li>Liberação imediata do acesso ao aplicativo de aulas teóricas</li>
-                            <li>Agendamento do exame prático em unidade do DETRAN próxima à sua residência</li>
-                            <li>Recebimento da CNH definitiva em sua residência via Correios</li>
-                        </ol>
+                        <div className="space-y-3 text-gray-700">
+                            <div className="flex items-start gap-3">
+                                <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white font-bold text-sm rounded-full flex items-center justify-center">1</span>
+                                <span>Liberação imediata do acesso ao aplicativo de aulas teóricas</span>
+                            </div>
+                            <div className="flex items-start gap-3">
+                                <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white font-bold text-sm rounded-full flex items-center justify-center">2</span>
+                                <span>Agendamento do exame prático em unidade do DETRAN próxima à sua residência</span>
+                            </div>
+                            <div className="flex items-start gap-3">
+                                <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white font-bold text-sm rounded-full flex items-center justify-center">3</span>
+                                <span>Recebimento da CNH definitiva em sua residência via Correios</span>
+                            </div>
+                        </div>
                     </div>
 
                     <p className="text-gray-700 leading-relaxed mb-8">
