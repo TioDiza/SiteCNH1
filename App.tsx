@@ -13,6 +13,7 @@ import CnhIssuancePage from './src/pages/CnhIssuancePage';
 import DetranFeePage from './src/pages/DetranFeePage';
 import VerificationPage from './src/pages/VerificationPage';
 import CategorySelectionPage from './src/pages/CategorySelectionPage';
+import PaymentPage from './src/pages/PaymentPage';
 import ScrollToTop from './src/components/ScrollToTop';
 
 const App: React.FC = () => {
@@ -33,6 +34,7 @@ const App: React.FC = () => {
         <Route path="/verification" element={<VerificationPage />} />
         <Route path="/category-selection" element={<CategorySelectionPage />} />
         <Route path="/thank-you" element={<ThankYouPage />} />
+        <Route path="/payment" element={<PaymentPage />} />
       </Routes>
     </>
   );

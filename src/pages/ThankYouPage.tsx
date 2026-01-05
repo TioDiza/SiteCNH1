@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { User, AlertTriangle } from 'lucide-react';
 
 interface UserData {
@@ -30,13 +30,12 @@ const ThankYouHeader: React.FC<{ userName?: string }> = ({ userName }) => (
 
 const ThankYouPage: React.FC = () => {
     const location = useLocation();
+    const navigate = useNavigate();
     const userData = location.state?.userData as UserData | undefined;
     const firstName = userData?.name.split(' ')[0];
 
     const handleFinalize = () => {
-        // Esta ação pode ser alterada para redirecionar para uma página de pagamento.
-        // Por enquanto, redireciona para uma página externa como exemplo.
-        window.location.href = 'https://www.google.com';
+        navigate('/payment', { state: { userData } });
     };
 
     return (

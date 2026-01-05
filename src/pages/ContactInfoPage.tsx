@@ -32,7 +32,7 @@ const ContactInfoPage: React.FC = () => {
     const [phone, setPhone] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
-    const userData = location.state?.userData as { name: string } | undefined;
+    const userData = location.state?.userData as { name: string; cpf: string; } | undefined;
     const firstName = userData?.name.split(' ')[0];
 
     const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -49,6 +49,7 @@ const ContactInfoPage: React.FC = () => {
         setIsLoading(true);
 
         const { answers } = location.state || {};
+        const unformattedCpf = userData?.cpf.replace(/\D/g, '');
 
         const { error } = await supabase
             .from('leads')
@@ -56,7 +57,8 @@ const ContactInfoPage: React.FC = () => {
                 { 
                     email: email, 
                     phone: phone,
-                    quiz_answers: answers 
+                    quiz_answers: answers,
+                    cpf: unformattedCpf
                 }
             ]);
 
