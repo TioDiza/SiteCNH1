@@ -27,21 +27,6 @@ const AdminLoginPage: React.FC = () => {
     }
     setIsLoading(false);
   };
-  
-  const handleSignUp = async () => {
-    setIsLoading(true);
-    setError(null);
-    const { error } = await supabase.auth.signUp({
-        email,
-        password,
-    });
-    if (error) {
-        setError(error.message);
-    } else {
-        setError("Cadastro realizado! Verifique seu e-mail para confirmar e depois faça o login.");
-    }
-    setIsLoading(false);
-  };
 
   return (
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
@@ -101,9 +86,6 @@ const AdminLoginPage: React.FC = () => {
             </button>
           </div>
         </form>
-        <div className="text-center text-sm text-gray-500">
-            <p>Não tem uma conta? <button onClick={handleSignUp} className="font-medium text-blue-600 hover:underline">Cadastre-se aqui</button> para criar seu acesso de administrador.</p>
-        </div>
       </div>
     </div>
   );
