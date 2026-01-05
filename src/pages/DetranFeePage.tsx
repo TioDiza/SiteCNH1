@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { User } from 'lucide-react';
 
 const DetranFeeHeader: React.FC = () => (
@@ -26,9 +26,10 @@ const DetranFeeHeader: React.FC = () => (
 
 const DetranFeePage: React.FC = () => {
     const navigate = useNavigate();
+    const location = useLocation();
 
     const handleNext = () => {
-        navigate('/thank-you');
+        navigate('/verification', { state: { userData: location.state?.userData } });
     };
 
     return (

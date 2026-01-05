@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { User } from 'lucide-react';
 
 const EligibilityHeader: React.FC = () => (
@@ -26,9 +26,10 @@ const EligibilityHeader: React.FC = () => (
 
 const EligibilityPage: React.FC = () => {
     const navigate = useNavigate();
+    const location = useLocation();
 
     const handleNext = () => {
-        navigate('/app-access');
+        navigate('/app-access', { state: { userData: location.state?.userData } });
     };
 
     return (

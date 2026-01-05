@@ -44,6 +44,7 @@ interface UserData {
     name: string;
     birthDate: string;
     gender: string;
+    cpf?: string;
 }
 
 const InfoRow: React.FC<{ label: string; value: string }> = ({ label, value }) => (
@@ -61,10 +62,9 @@ const ConfirmationPage: React.FC = () => {
 
     useEffect(() => {
         if (location.state && location.state.userData) {
-            const data = location.state.userData;
+            const data = { ...location.state.userData, cpf: location.state.cpf };
             setUserData(data);
 
-            // Calculate age
             const [day, month, year] = data.birthDate.split('/').map(Number);
             const birthDate = new Date(year, month - 1, day);
             const today = new Date();
@@ -84,7 +84,7 @@ const ConfirmationPage: React.FC = () => {
     };
 
     if (!userData) {
-        return null; // ou um loader
+        return null;
     }
 
     const genderDisplay = userData.gender === 'M' ? 'Masculino' : userData.gender === 'F' ? 'Feminino' : userData.gender;

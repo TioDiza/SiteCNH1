@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { User } from 'lucide-react';
 
 const AppAccessHeader: React.FC = () => (
@@ -26,9 +26,10 @@ const AppAccessHeader: React.FC = () => (
 
 const AppAccessPage: React.FC = () => {
     const navigate = useNavigate();
+    const location = useLocation();
 
     const handleNext = () => {
-        navigate('/theoretical-classes');
+        navigate('/theoretical-classes', { state: { userData: location.state?.userData } });
     };
 
     return (

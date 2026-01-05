@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Menu, Search, User, Globe, AppWindow, MoreVertical } from 'lucide-react';
+import { User } from 'lucide-react';
 
 const QuizHeader: React.FC = () => (
     <header className="bg-white border-b border-gray-200">
@@ -25,76 +25,17 @@ const QuizHeader: React.FC = () => (
 );
 
 const quizQuestions = [
-    {
-        id: 1,
-        question: "Qual dessas situações mais representa você hoje?",
-        options: [
-            "Quero tirar a CNH, mas sempre acabo adiando",
-            "Já tentei e reprovei, isso me desmotivou",
-            "Meu processo venceu e não sei como resolver",
-            "Preciso da CNH com urgência",
-            "Nunca tentei, mas quero começar do jeito certo",
-        ],
-    },
-    {
-        id: 2,
-        question: "O que mais te impede de tirar a CNH hoje?",
-        options: [
-            "Medo de reprovar novamente",
-            "Falta de orientação clara",
-            "Falta de tempo",
-            "Questão financeira",
-            "Nunca soube por onde começar",
-        ],
-    },
-    {
-        id: 3,
-        question: "Em qual etapa você parou ou está hoje?",
-        options: [
-            "Nunca iniciei nenhum processo",
-            "Fiz exames médico e psicológico",
-            "Fiz a prova teórica",
-            "Reprovei na prova prática",
-            "Meu processo venceu",
-            "Já tive CNH e preciso regularizar",
-        ],
-    },
-    {
-        id: 4,
-        question: "O que mudaria na sua vida se você tivesse a CNH hoje?",
-        options: [
-            "Conseguiria melhores oportunidades de trabalho",
-            "Teria mais liberdade e autonomia",
-            "Ajudaria minha família",
-            "Economizaria tempo e dinheiro",
-            "Tudo isso",
-        ],
-    },
-    {
-        id: 5,
-        question: "Você sente que já perdeu oportunidades por não ter CNH?",
-        options: [
-            "Sim, várias",
-            "Sim, algumas",
-            "Talvez",
-            "Não tinha pensado nisso",
-            "Não",
-        ],
-    },
-    {
-        id: 6,
-        question: "Qual seu nível de urgência para resolver isso?",
-        options: [
-            "Urgente — preciso da CNH o quanto antes",
-            "Alta — não quero mais adiar",
-            "Média — quero planejar com calma",
-            "Baixa — só estou pesquisando por enquanto",
-        ],
-    },
+    { id: 1, question: "Qual dessas situações mais representa você hoje?", options: ["Quero tirar a CNH, mas sempre acabo adiando", "Já tentei e reprovei, isso me desmotivou", "Meu processo venceu e não sei como resolver", "Preciso da CNH com urgência", "Nunca tentei, mas quero começar do jeito certo"] },
+    { id: 2, question: "O que mais te impede de tirar a CNH hoje?", options: ["Medo de reprovar novamente", "Falta de orientação clara", "Falta de tempo", "Questão financeira", "Nunca soube por onde começar"] },
+    { id: 3, question: "Em qual etapa você parou ou está hoje?", options: ["Nunca iniciei nenhum processo", "Fiz exames médico e psicológico", "Fiz a prova teórica", "Reprovei na prova prática", "Meu processo venceu", "Já tive CNH e preciso regularizar"] },
+    { id: 4, question: "O que mudaria na sua vida se você tivesse a CNH hoje?", options: ["Conseguiria melhores oportunidades de trabalho", "Teria mais liberdade e autonomia", "Ajudaria minha família", "Economizaria tempo e dinheiro", "Tudo isso"] },
+    { id: 5, question: "Você sente que já perdeu oportunidades por não ter CNH?", options: ["Sim, várias", "Sim, algumas", "Talvez", "Não tinha pensado nisso", "Não"] },
+    { id: 6, question: "Qual seu nível de urgência para resolver isso?", options: ["Urgente — preciso da CNH o quanto antes", "Alta — não quero mais adiar", "Média — quero planejar com calma", "Baixa — só estou pesquisando por enquanto"] },
 ];
 
 const QuizPage: React.FC = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
     const [selectedOption, setSelectedOption] = useState<string | null>(null);
     const [answers, setAnswers] = useState<Record<number, string>>({});
@@ -111,9 +52,8 @@ const QuizPage: React.FC = () => {
             if (currentQuestionIndex < quizQuestions.length - 1) {
                 setCurrentQuestionIndex(currentQuestionIndex + 1);
             } else {
-                // Quiz finished
-                console.log("Respostas Finais:", newAnswers);
-                navigate('/contact-info', { state: { answers: newAnswers } });
+                const userData = location.state?.userData;
+                navigate('/contact-info', { state: { answers: newAnswers, userData: userData } });
             }
         } else {
             alert("Por favor, selecione uma opção.");
@@ -133,25 +73,18 @@ const QuizPage: React.FC = () => {
                             <div className="bg-[#0d6efd] h-2.5 rounded-full" style={{ width: `${progress}%` }}></div>
                         </div>
                     </div>
-
                     <h2 className="text-2xl font-bold text-gray-800 mb-6">{currentQuestion.question}</h2>
-
                     <div className="space-y-4 mb-8">
                         {currentQuestion.options.map((option, index) => (
                             <button
                                 key={index}
                                 onClick={() => setSelectedOption(option)}
-                                className={`w-full text-left p-4 border rounded-lg transition-all duration-200 text-lg
-                                    ${selectedOption === option 
-                                        ? 'bg-[#0d6efd] text-white border-blue-700 shadow-lg' 
-                                        : 'bg-white hover:bg-gray-100 border-gray-300'}`
-                                }
+                                className={`w-full text-left p-4 border rounded-lg transition-all duration-200 text-lg ${selectedOption === option ? 'bg-[#0d6efd] text-white border-blue-700 shadow-lg' : 'bg-white hover:bg-gray-100 border-gray-300'}`}
                             >
                                 {option}
                             </button>
                         ))}
                     </div>
-
                     <button
                         onClick={handleNext}
                         disabled={!selectedOption}

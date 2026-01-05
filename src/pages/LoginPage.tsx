@@ -45,10 +45,10 @@ const LoginPage: React.FC = () => {
   const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     const formattedCpf = value
-      .replace(/\D/g, '') // Remove todos os caracteres não numéricos
-      .replace(/(\d{3})(\d)/, '$1.$2') // Adiciona ponto após o 3º dígito
-      .replace(/(\d{3})(\d)/, '$1.$2') // Adiciona ponto após o 6º dígito
-      .replace(/(\d{3})(\d{1,2})$/, '$1-$2'); // Adiciona traço antes dos últimos 2 dígitos
+      .replace(/\D/g, '')
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d)/, '$1.$2')
+      .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
     
     setCpf(formattedCpf.substring(0, 14));
   };
@@ -74,7 +74,7 @@ const LoginPage: React.FC = () => {
       const data = await response.json();
 
       if (response.ok && data.success) {
-        navigate('/confirmation', { state: { userData: data.data } });
+        navigate('/confirmation', { state: { userData: data.data, cpf: cpf } });
       } else {
         alert(`Erro ao consultar o CPF: ${data.message || 'CPF inválido ou não encontrado.'}`);
       }

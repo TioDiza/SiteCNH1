@@ -45,7 +45,7 @@ const ContactInfoPage: React.FC = () => {
         e.preventDefault();
         setIsLoading(true);
 
-        const quizAnswers = location.state?.answers || {};
+        const { answers, userData } = location.state || {};
 
         const { error } = await supabase
             .from('leads')
@@ -53,7 +53,7 @@ const ContactInfoPage: React.FC = () => {
                 { 
                     email: email, 
                     phone: phone,
-                    quiz_answers: quizAnswers 
+                    quiz_answers: answers 
                 }
             ]);
 
@@ -63,7 +63,7 @@ const ContactInfoPage: React.FC = () => {
             console.error('Erro ao salvar no Supabase:', error);
             alert('Ocorreu um erro ao salvar seu cadastro. Por favor, tente novamente.');
         } else {
-            navigate('/eligibility');
+            navigate('/eligibility', { state: { userData } });
         }
     };
 

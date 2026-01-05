@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { User } from 'lucide-react';
 
 const TheoreticalClassesHeader: React.FC = () => (
@@ -26,9 +26,10 @@ const TheoreticalClassesHeader: React.FC = () => (
 
 const TheoreticalClassesPage: React.FC = () => {
     const navigate = useNavigate();
+    const location = useLocation();
 
     const handleNext = () => {
-        navigate('/cnh-issuance');
+        navigate('/cnh-issuance', { state: { userData: location.state?.userData } });
     };
 
     return (
