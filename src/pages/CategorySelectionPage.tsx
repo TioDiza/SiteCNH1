@@ -14,7 +14,7 @@ interface Message {
     content: React.ReactNode;
 }
 
-// --- State Abbreviations ---
+// --- Mappings ---
 const stateAbbreviations: { [key: string]: string } = {
     'Acre': 'AC', 'Alagoas': 'AL', 'Amapá': 'AP', 'Amazonas': 'AM', 'Bahia': 'BA',
     'Ceará': 'CE', 'Distrito Federal': 'DF', 'Espírito Santo': 'ES', 'Goiás': 'GO',
@@ -23,6 +23,36 @@ const stateAbbreviations: { [key: string]: string } = {
     'Rio de Janeiro': 'RJ', 'Rio Grande do Norte': 'RN', 'Rio Grande do Sul': 'RS',
     'Rondônia': 'RO', 'Roraima': 'RR', 'Santa Catarina': 'SC', 'São Paulo': 'SP',
     'Sergipe': 'SE', 'Tocantins': 'TO'
+};
+
+const detranLogos: { [key: string]: string } = {
+    'Acre': '/detran-logos/acre.png',
+    'Alagoas': '/detran-logos/alagoas.png',
+    'Amapá': '/detran-logos/amapa.png',
+    'Amazonas': '/detran-logos/amazonas.png',
+    'Bahia': '/detran-logos/bahia.png',
+    'Ceará': '/detran-logos/ceara.png',
+    'Distrito Federal': '/detran-logos/distrito-federal.png',
+    'Espírito Santo': '/detran-logos/espirito-santo.png',
+    'Goiás': '/detran-logos/goias.png',
+    'Maranhão': '/detran-logos/maranhao.png',
+    'Mato Grosso': '/detran-logos/mato-grosso.png',
+    'Mato Grosso do Sul': '/detran-logos/mato-grosso-do-sul.png',
+    'Minas Gerais': '/detran-logos/minas-gerais.png',
+    'Pará': '/detran-logos/para.png',
+    'Paraíba': '/detran-logos/paraiba.png',
+    'Paraná': '/detran-logos/parana.png',
+    'Pernambuco': '/detran-logos/pernambuco.png',
+    'Piauí': '/detran-logos/piaui.png',
+    'Rio de Janeiro': '/detran-logos/rio-de-janeiro.png',
+    'Rio Grande do Norte': '/detran-logos/rio-grande-do-norte.png',
+    'Rio Grande do Sul': '/detran-logos/rio-grande-do-sul.png',
+    'Rondônia': '/detran-logos/rondonia.png',
+    'Roraima': '/detran-logos/roraima.png',
+    'Santa Catarina': '/detran-logos/santa-catarina.png',
+    'São Paulo': '/detran-logos/sao-paulo.png',
+    'Sergipe': '/detran-logos/sergipe.png',
+    'Tocantins': '/detran-logos/tocantins.png'
 };
 
 // --- Components ---
@@ -126,10 +156,16 @@ const ComprovanteCadastro: React.FC<{
     emissionDate: string;
 }> = ({ userData, selectedState, selectedMonth, selectedCategory, renach, protocolo, emissionDate }) => {
     const stateAbbr = stateAbbreviations[selectedState || ''] || '';
+    const logoSrc = detranLogos[selectedState || ''];
+
     return (
         <div className="bg-white text-gray-800 rounded-lg border border-gray-200 p-4 font-sans text-sm w-full max-w-md shadow-lg">
             <div className="flex justify-between items-center mb-4">
-                <p className="font-bold text-lg tracking-wider">DETRAN.{stateAbbr}</p>
+                {logoSrc ? (
+                    <img src={logoSrc} alt={`Logo DETRAN ${selectedState}`} className="h-12 w-auto" />
+                ) : (
+                    <p className="font-bold text-lg tracking-wider">DETRAN.{stateAbbr}</p>
+                )}
                 <p className="text-xs text-gray-500">Protocolo: {protocolo}</p>
             </div>
             <p className="text-center font-bold text-gray-600 mb-6">COMPROVANTE DE CADASTRO - RENACH</p>
