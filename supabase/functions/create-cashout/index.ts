@@ -6,17 +6,17 @@ const corsHeaders = {
 }
 
 const ROYAL_BANKING_CASHOUT_API_URL = 'https://api.royalbanking.com.br/c1/cashout/';
-// IMPORTANT: Set this in the Supabase Dashboard: Project -> Edge Functions -> create-cashout -> Manage Secrets
-const ROYAL_BANKING_CASHOUT_API_KEY = Deno.env.get('ROYAL_BANKING_CASHOUT_API_KEY'); 
+// IMPORTANTE: Defina isso no Painel Supabase: Projeto -> Funções Edge -> create-cashout -> Gerenciar Segredos
+const ROYAL_BANKING_API_KEY = Deno.env.get('ROYAL_BANKING_API_KEY'); 
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
-  if (!ROYAL_BANKING_CASHOUT_API_KEY) {
-    console.error('ROYAL_BANKING_CASHOUT_API_KEY secret is not set.');
-    return new Response(JSON.stringify({ error: 'A chave da API para o gateway de pagamento (cash-out) não está configurada.' }), {
+  if (!ROYAL_BANKING_API_KEY) {
+    console.error('O segredo ROYAL_BANKING_API_KEY não está definido.');
+    return new Response(JSON.stringify({ error: 'A chave da API para o gateway de pagamento não está configurada.' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
     })
@@ -28,12 +28,12 @@ serve(async (req) => {
     if (!amount || !keypix || !pixType || !name || !cpf || !postbackUrl) {
       return new Response(JSON.stringify({ error: 'Faltam informações obrigatórias para o saque.' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 422, // As per docs
+        status: 422, // Conforme a documentação
       });
     }
 
     const payload = {
-      'api-key': ROYAL_BANKING_CASHOUT_API_KEY,
+      'api-key': ROYAL_BANKING_API_KEY,
       amount,
       keypix,
       pixType,
@@ -65,7 +65,7 @@ serve(async (req) => {
     });
 
   } catch (error) {
-    console.error('Error in create-cashout function:', error);
+    console.error('Erro na função create-cashout:', error);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
