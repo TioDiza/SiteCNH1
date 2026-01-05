@@ -174,7 +174,7 @@ const CategorySelectionPage: React.FC = () => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [isBotTyping, setIsBotTyping] = useState(false);
     const [conversationStep, setConversationStep] = useState(0);
-    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+    const selectedCategoryRef = useRef<string | null>(null);
     const chatEndRef = useRef<HTMLDivElement>(null);
 
     const categoryOptions = [
@@ -208,8 +208,8 @@ const CategorySelectionPage: React.FC = () => {
     const handleCategorySelect = (category: string, description: string) => {
         if (conversationStep !== 0) return;
         addMessage('user', description);
-        console.log(`[DEBUG] Categoria selecionada: ${category}`);
-        setSelectedCategory(category);
+        console.log(`[DEBUG] Categoria selecionada e salva: ${category}`);
+        selectedCategoryRef.current = category;
         setConversationStep(1);
 
         setIsBotTyping(true);
@@ -241,16 +241,18 @@ const CategorySelectionPage: React.FC = () => {
         addMessage('user', month);
         setConversationStep(4);
 
+        const currentCategory = selectedCategoryRef.current;
+
         console.log('--- [DEBUG] Verificando dados antes de gerar RENACH ---');
         console.log('User Data:', userData);
         console.log('Selected State:', selectedState);
-        console.log('Selected Category:', selectedCategory);
+        console.log('Selected Category (from ref):', currentCategory);
 
-        if (!userData || !selectedState || !selectedCategory) {
+        if (!userData || !selectedState || !currentCategory) {
             console.error('[ERRO] Validação falhou! Dados faltando:', {
                 userData: !!userData,
                 selectedState: !!selectedState,
-                selectedCategory: !!selectedCategory,
+                selectedCategory: !!currentCategory,
             });
             setIsBotTyping(true);
             setTimeout(() => {
@@ -278,7 +280,7 @@ const CategorySelectionPage: React.FC = () => {
                     userData={userData}
                     selectedState={selectedState}
                     selectedMonth={month}
-                    selectedCategory={selectedCategory}
+                    selectedCategory={currentCategory}
                     renach={renach}
                     protocolo={protocolo}
                     emissionDate={emissionDate}
