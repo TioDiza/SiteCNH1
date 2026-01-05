@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { User, Mail, Phone } from 'lucide-react';
-import { supabase } from '../../integrations/supabase/client';
+import { supabase } from '../integrations/supabase/client';
 
 const ContactInfoHeader: React.FC = () => (
     <header className="bg-white border-b border-gray-200">
