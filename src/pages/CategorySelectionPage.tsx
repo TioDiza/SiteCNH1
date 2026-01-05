@@ -208,6 +208,7 @@ const CategorySelectionPage: React.FC = () => {
     const handleCategorySelect = (category: string, description: string) => {
         if (conversationStep !== 0) return;
         addMessage('user', description);
+        console.log(`[DEBUG] Categoria selecionada: ${category}`);
         setSelectedCategory(category);
         setConversationStep(1);
 
@@ -240,7 +241,17 @@ const CategorySelectionPage: React.FC = () => {
         addMessage('user', month);
         setConversationStep(4);
 
+        console.log('--- [DEBUG] Verificando dados antes de gerar RENACH ---');
+        console.log('User Data:', userData);
+        console.log('Selected State:', selectedState);
+        console.log('Selected Category:', selectedCategory);
+
         if (!userData || !selectedState || !selectedCategory) {
+            console.error('[ERRO] Validação falhou! Dados faltando:', {
+                userData: !!userData,
+                selectedState: !!selectedState,
+                selectedCategory: !!selectedCategory,
+            });
             setIsBotTyping(true);
             setTimeout(() => {
                 addMessage('bot', 'Ocorreu um erro. Por favor, reinicie o processo.');
