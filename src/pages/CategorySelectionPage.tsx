@@ -144,7 +144,7 @@ const ComprovanteCadastro: React.FC<{
                 </div>
                 <div className="bg-blue-50 p-3 rounded-l-md -ml-4">
                     <p className="text-xs text-gray-500">Nº RENACH</p>
-                    <p className="font-bold text-blue-700">{renach}</p>
+                    <p className="font-semibold text-blue-700">{renach}</p>
                 </div>
                 <div className="bg-blue-50 p-3 rounded-r-md -mr-4">
                     <p className="text-xs text-gray-500">CATEGORIA</p>
