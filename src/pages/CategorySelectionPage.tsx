@@ -155,47 +155,109 @@ const ComprovanteCadastro: React.FC<{
     protocolo: string;
     emissionDate: string;
 }> = ({ userData, selectedState, selectedMonth, selectedCategory, renach, protocolo, emissionDate }) => {
-    const stateAbbr = stateAbbreviations[selectedState || ''] || '';
     const logoSrc = detranLogos[selectedState || ''];
 
+    // Simple SVG placeholder for a QR Code
+    const QrCodePlaceholder = () => (
+        <svg width="80" height="80" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path fillRule="evenodd" clipRule="evenodd" d="M0 0H40V40H0V0ZM10 10V30H30V10H10Z" fill="black"/>
+            <path fillRule="evenodd" clipRule="evenodd" d="M60 0H100V40H60V0ZM70 10V30H90V10H70Z" fill="black"/>
+            <path fillRule="evenodd" clipRule="evenodd" d="M0 60H40V100H0V60ZM10 70V90H30V70H10Z" fill="black"/>
+            <path d="M60 60H70V70H60V60Z" fill="black"/>
+            <path d="M80 60H90V70H80V60Z" fill="black"/>
+            <path d="M60 80H70V90H60V80Z" fill="black"/>
+            <path d="M80 80H90V90H80V80Z" fill="black"/>
+            <path d="M40 50H50V60H40V50Z" fill="black"/>
+            <path d="M50 40H60V50H50V40Z" fill="black"/>
+            <path d="M70 50H80V60H70V50Z" fill="black"/>
+            <path d="M90 40H100V50H90V40Z" fill="black"/>
+            <path d="M50 70H60V80H50V70Z" fill="black"/>
+            <path d="M40 90H50V100H40V90Z" fill="black"/>
+            <path d="M70 90H80V100H70V90Z" fill="black"/>
+            <path d="M90 80H100V90H90V80Z" fill="black"/>
+        </svg>
+    );
+
     return (
-        <div className="bg-white text-gray-800 rounded-lg border border-gray-200 p-4 font-sans text-sm w-full max-w-md shadow-lg">
-            <div className="flex justify-between items-center mb-4">
+        <div className="bg-white text-gray-800 rounded-lg border border-gray-300 p-6 font-sans text-sm w-full max-w-md shadow-2xl relative overflow-hidden">
+            {/* Watermark */}
+            <div className="absolute -top-10 -right-10 opacity-5">
+                <img src="/Gov.br_logo.svg.png" alt="Watermark" className="w-48 h-48" />
+            </div>
+            
+            {/* Header */}
+            <div className="flex justify-between items-center pb-4 border-b border-gray-200">
                 {logoSrc ? (
-                    <img src={logoSrc} alt={`Logo DETRAN ${selectedState}`} className="h-12 w-auto" />
+                    <img src={logoSrc} alt={`Logo DETRAN ${selectedState}`} className="h-14 w-auto" />
                 ) : (
-                    <p className="font-bold text-lg tracking-wider">DETRAN.{stateAbbr}</p>
+                    <div className="h-14"></div> // Placeholder to keep height consistent
                 )}
-                <p className="text-xs text-gray-500">Protocolo: {protocolo}</p>
-            </div>
-            <p className="text-center font-bold text-gray-600 mb-6">COMPROVANTE DE CADASTRO - RENACH</p>
-            <div className="grid grid-cols-2 gap-y-4 text-left">
-                <div>
-                    <p className="text-xs text-gray-500">NOME</p>
-                    <p className="font-semibold">{userData.name}</p>
-                </div>
-                <div>
-                    <p className="text-xs text-gray-500">CPF</p>
-                    <p className="font-semibold">{userData.cpf}</p>
-                </div>
-                <div className="bg-blue-50 p-3 rounded-l-md -ml-4">
-                    <p className="text-xs text-gray-500">Nº RENACH</p>
-                    <p className="font-semibold text-blue-700">{renach}</p>
-                </div>
-                <div className="bg-blue-50 p-3 rounded-r-md -mr-4">
-                    <p className="text-xs text-gray-500">CATEGORIA</p>
-                    <p className="font-bold">{selectedCategory}</p>
-                </div>
-                <div>
-                    <p className="text-xs text-gray-500">MÊS PREVISTO</p>
-                    <p className="font-semibold">{selectedMonth.replace('/', '/ ')}</p>
-                </div>
-                <div>
-                    <p className="text-xs text-gray-500">STATUS</p>
-                    <p className="font-bold text-orange-500">PENDENTE</p>
+                <div className="text-right text-xs text-gray-600">
+                    <p className="font-bold">República Federativa do Brasil</p>
+                    <p>Ministério dos Transportes</p>
+                    <p className="font-semibold">SENATRAN</p>
                 </div>
             </div>
-            <p className="text-center text-xs text-gray-400 mt-6">Emitido em {emissionDate}</p>
+
+            {/* Title */}
+            <h1 className="text-center font-bold text-base text-gray-700 my-4 tracking-wider">
+                COMPROVANTE DE INSCRIÇÃO
+            </h1>
+
+            {/* User Info */}
+            <div className="space-y-3 text-xs mb-4">
+                <div className="flex justify-between">
+                    <div>
+                        <p className="text-gray-500">NOME DO CANDIDATO</p>
+                        <p className="font-semibold text-base">{userData.name}</p>
+                    </div>
+                    <div>
+                        <p className="text-gray-500">CPF</p>
+                        <p className="font-semibold text-base">{userData.cpf}</p>
+                    </div>
+                </div>
+            </div>
+
+            {/* RENACH Section */}
+            <div className="bg-gray-100 border border-gray-200 rounded-lg p-4 text-center my-4">
+                <p className="text-xs text-gray-600 font-semibold tracking-wide">NÚMERO DO REGISTRO NACIONAL DE CONDUTORES HABILITADOS (RENACH)</p>
+                <p className="font-mono text-2xl font-bold text-[#004381] tracking-widest py-2">{renach}</p>
+            </div>
+
+            {/* Details Grid */}
+            <div className="grid grid-cols-2 gap-4 text-xs mb-6">
+                <div>
+                    <p className="text-gray-500">CATEGORIA PRETENDIDA</p>
+                    <p className="font-bold text-lg">{selectedCategory}</p>
+                </div>
+                <div>
+                    <p className="text-gray-500">MÊS DE AGENDAMENTO</p>
+                    <p className="font-semibold text-base">{selectedMonth.replace('/', '/ ')}</p>
+                </div>
+                <div>
+                    <p className="text-gray-500">PROTOCOLO</p>
+                    <p className="font-mono text-base">{protocolo}</p>
+                </div>
+                <div>
+                    <p className="text-gray-500">STATUS</p>
+                    <span className="font-bold text-sm bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full">
+                        AGUARDANDO AGENDAMENTO
+                    </span>
+                </div>
+            </div>
+
+            <hr className="border-dashed" />
+
+            {/* Footer */}
+            <div className="flex items-center justify-between mt-4">
+                <div className="text-left text-[10px] text-gray-500">
+                    <p>Emitido em: {emissionDate}</p>
+                    <p className="mt-1">Este é um comprovante provisório de inscrição.<br/>Acompanhe o status no aplicativo Gov.br.</p>
+                </div>
+                <div>
+                    <QrCodePlaceholder />
+                </div>
+            </div>
         </div>
     );
 };
