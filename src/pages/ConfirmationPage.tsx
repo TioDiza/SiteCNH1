@@ -80,8 +80,7 @@ const ConfirmationPage: React.FC = () => {
     }, [location, navigate]);
 
     const handleConfirm = () => {
-        alert(`Cadastro confirmado para: ${userData?.name}`);
-        // Lógica para o próximo passo
+        navigate('/quiz', { state: { userData } });
     };
 
     if (!userData) {
@@ -110,7 +109,7 @@ const ConfirmationPage: React.FC = () => {
                                 onClick={handleConfirm}
                                 className="bg-[#0d6efd] text-white px-12 py-3 rounded-full font-bold text-lg hover:bg-blue-700 transition-colors"
                             >
-                                Confirmar
+                                Confirmar e Iniciar Questionário
                             </button>
                         </div>
                     </div>
