@@ -129,6 +129,7 @@ const ComprovanteCadastro: React.FC<{
     return (
         <div className="bg-white text-gray-800 rounded-lg border border-gray-200 p-4 font-sans text-sm w-full max-w-md shadow-lg">
             <div className="flex justify-between items-center mb-4">
+                <img src={`https://www.detran.ro.gov.br/wp-content/uploads/2022/03/detran-logo-${stateAbbr.toLowerCase()}.png`} alt={`DETRAN ${stateAbbr}`} className="h-6" onError={(e) => e.currentTarget.style.display = 'none'}/>
                 <p className="font-bold text-lg tracking-wider">DETRAN.{stateAbbr}</p>
                 <p className="text-xs text-gray-500">Protocolo: {protocolo}</p>
             </div>
@@ -165,6 +166,7 @@ const ComprovanteCadastro: React.FC<{
 };
 
 const CategorySelectionPage: React.FC = () => {
+    const navigate = useNavigate();
     const location = useLocation();
     const userData = location.state?.userData as UserData | undefined;
     const selectedState = location.state?.selectedState as string | undefined;
@@ -209,55 +211,35 @@ const CategorySelectionPage: React.FC = () => {
     const handleCategorySelect = (category: string, description: string) => {
         if (conversationStep !== 0) return;
         
-        setSelectedCategory(category);
         addMessage('user', description);
+        setSelectedCategory(category);
         setConversationStep(1);
         setIsBotTyping(true);
 
         setTimeout(() => {
             setIsBotTyping(false);
-            addMessage('bot', (
-                <p>
-                    Prezado(a) {firstName}, informamos que as aulas teóricas do Programa CNH do Brasil podem ser realizadas de forma remota, por meio de dispositivo móvel ou computador, conforme sua disponibilidade de horário.
-                </p>
-            ));
+            addMessage('bot', <p>Prezado(a) {firstName}, informamos que as aulas teóricas do Programa CNH do Brasil podem ser realizadas de forma remota, por meio de dispositivo móvel ou computador, conforme sua disponibilidade de horário.</p>);
         }, 1500);
     };
 
-    const handleProsseguir1 = () => {
-        if (conversationStep !== 1) return;
-
-        addMessage('user', "Prosseguir");
-        setConversationStep(2);
+    const handleProsseguir = () => {
         setIsBotTyping(true);
+        const nextStep = conversationStep + 1;
+        setConversationStep(nextStep);
+        addMessage('user', "Prosseguir");
 
         setTimeout(() => {
             setIsBotTyping(false);
-            addMessage('bot', (
-                <p>
-                    O Programa CNH do Brasil segue as seguintes etapas: o candidato realiza as aulas teóricas através do aplicativo oficial e, após a conclusão, o Detran {selectedState || ''} disponibilizará um instrutor credenciado, sem custo adicional, para a realização das aulas práticas obrigatórias.
-                </p>
-            ));
-        }, 1500);
-    };
-
-    const handleProsseguir2 = () => {
-        if (conversationStep !== 2) return;
-
-        addMessage('user', "Prosseguir");
-        setConversationStep(3);
-        setIsBotTyping(true);
-
-        setTimeout(() => {
-            setIsBotTyping(false);
-            addMessage('bot', "Selecione o mês de sua preferência para realização das avaliações:");
+            if (nextStep === 2) {
+                addMessage('bot', <p>O Programa CNH do Brasil segue as seguintes etapas: o candidato realiza as aulas teóricas através do aplicativo oficial e, após a conclusão, o Detran {selectedState || ''} disponibilizará um instrutor credenciado, sem custo adicional, para a realização das aulas práticas obrigatórias.</p>);
+            } else if (nextStep === 3) {
+                addMessage('bot', "Selecione o mês de sua preferência para realização das avaliações:");
+            }
         }, 1500);
     };
 
     const handleMonthSelect = (month: string) => {
-        if (conversationStep !== 3) return;
-        
-        if (!userData || !selectedState || !selectedCategory) {
+        if (conversationStep !== 3 || !userData || !selectedState || !selectedCategory) {
             addMessage('bot', 'Ocorreu um erro. Por favor, tente novamente.');
             return;
         }
@@ -268,9 +250,7 @@ const CategorySelectionPage: React.FC = () => {
 
         const renach = Math.floor(1000000000 + Math.random() * 9000000000).toString();
         const protocolo = `2026658${Math.floor(100000 + Math.random() * 900000).toString()}`;
-        const emissionDate = new Date().toLocaleString('pt-BR', {
-            day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
-        }).replace(',', ' às');
+        const emissionDate = new Date().toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }).replace(',', ' às');
 
         setTimeout(() => {
             setIsBotTyping(false);
@@ -292,7 +272,13 @@ const CategorySelectionPage: React.FC = () => {
                     emissionDate={emissionDate}
                 />
             );
+            setConversationStep(5);
         }, 2000);
+    };
+
+    const handleFinalProsseguir = () => {
+        if (!userData) return;
+        navigate('/thank-you', { state: { userData } });
     };
 
     return (
@@ -306,49 +292,24 @@ const CategorySelectionPage: React.FC = () => {
                             return (
                                 <div key={msg.id}>
                                     <BotMessage>{msg.content}</BotMessage>
-                                    {msg.id === 1 && conversationStep === 0 && (
-                                        <div className="space-y-3 mt-4 animate-fade-in">
-                                            {categoryOptions.map(opt => (
-                                                <CategoryOption
-                                                    key={opt.category}
-                                                    category={opt.category}
-                                                    description={opt.description}
-                                                    onClick={() => handleCategorySelect(opt.category, opt.description)}
-                                                />
-                                            ))}
-                                        </div>
-                                    )}
-                                    {isLastMessage && conversationStep === 1 && !isBotTyping && (
-                                        <div className="mt-4 animate-fade-in">
-                                            <button 
-                                                onClick={handleProsseguir1}
-                                                className="p-3 border border-gray-300 bg-white rounded-lg hover:bg-gray-50 transition-colors text-gray-700 font-medium shadow-sm"
-                                            >
-                                                Prosseguir
-                                            </button>
-                                        </div>
-                                    )}
-                                    {isLastMessage && conversationStep === 2 && !isBotTyping && (
-                                        <div className="mt-4 animate-fade-in">
-                                            <button 
-                                                onClick={handleProsseguir2}
-                                                className="p-3 border border-gray-300 bg-white rounded-lg hover:bg-gray-50 transition-colors text-gray-700 font-medium shadow-sm"
-                                            >
-                                                Prosseguir
-                                            </button>
-                                        </div>
-                                    )}
-                                    {isLastMessage && conversationStep === 3 && !isBotTyping && (
-                                        <div className="grid grid-cols-2 gap-3 mt-4 animate-fade-in">
-                                            {monthOptions.map(opt => (
-                                                <MonthOption
-                                                    key={opt.month}
-                                                    month={opt.month}
-                                                    vagas={opt.vagas}
-                                                    onClick={() => handleMonthSelect(opt.month)}
-                                                />
-                                            ))}
-                                        </div>
+                                    {isLastMessage && !isBotTyping && (
+                                        <>
+                                            {conversationStep === 0 && (
+                                                <div className="space-y-3 mt-4 animate-fade-in">
+                                                    {categoryOptions.map(opt => <CategoryOption key={opt.category} {...opt} onClick={() => handleCategorySelect(opt.category, opt.description)} />)}
+                                                </div>
+                                            )}
+                                            {(conversationStep === 1 || conversationStep === 2) && (
+                                                <div className="mt-4 animate-fade-in">
+                                                    <button onClick={handleProsseguir} className="p-3 border border-gray-300 bg-white rounded-lg hover:bg-gray-50 transition-colors text-gray-700 font-medium shadow-sm">Prosseguir</button>
+                                                </div>
+                                            )}
+                                            {conversationStep === 3 && (
+                                                <div className="grid grid-cols-2 gap-3 mt-4 animate-fade-in">
+                                                    {monthOptions.map(opt => <MonthOption key={opt.month} {...opt} onClick={() => handleMonthSelect(opt.month)} />)}
+                                                </div>
+                                            )}
+                                        </>
                                     )}
                                 </div>
                             );
@@ -360,6 +321,13 @@ const CategorySelectionPage: React.FC = () => {
                     {isBotTyping && <LoadingMessage />}
                     <div ref={chatEndRef} />
                 </div>
+                {conversationStep === 5 && (
+                    <div className="mt-4 animate-fade-in">
+                        <button onClick={handleFinalProsseguir} className="w-full bg-[#004381] text-white py-3 rounded-lg font-bold text-lg hover:bg-blue-700 transition-colors">
+                            Prosseguir &gt;
+                        </button>
+                    </div>
+                )}
             </main>
         </div>
     );
