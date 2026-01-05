@@ -71,8 +71,9 @@ const ContactInfoPage: React.FC = () => {
             alert('Ocorreu um erro ao salvar seu cadastro. Por favor, tente novamente.');
         } else {
             const savedData = sessionStorage.getItem('cnh_userData');
+            let fullData = {};
             if (savedData) {
-                const fullData = { 
+                fullData = { 
                     ...JSON.parse(savedData), 
                     leadId: newLead.id,
                     email: email,
@@ -80,7 +81,7 @@ const ContactInfoPage: React.FC = () => {
                 };
                 sessionStorage.setItem('cnh_userData', JSON.stringify(fullData));
             }
-            navigate('/eligibility', { state: { userData } });
+            navigate('/eligibility', { state: { userData: fullData } });
         }
     };
 
