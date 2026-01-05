@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { User, Mail, Phone } from 'lucide-react';
 import { supabase } from '../integrations/supabase/client';
+import { v4 as uuidv4 } from 'uuid';
 
 const ContactInfoHeader: React.FC<{ userName?: string }> = ({ userName }) => (
     <header className="bg-white border-b border-gray-200">
@@ -71,35 +72,33 @@ const ContactInfoPage: React.FC = () => {
         const savedDataParsed = JSON.parse(savedDataString);
         const unformattedCpf = savedDataParsed.cpf?.replace(/\D/g, '');
 
-        const { data: newLead, error } = await supabase
+        const leadId = uuidv4();
+
+        const { error } = await supabase
             .from('leads')
             .insert([
                 { 
+                    id: leadId,
                     email: email, 
                     phone: phone,
                     quiz_answers: answers,
                     cpf: unformattedCpf
                 }
-            ])
-            .select('id')
-            .single();
+            ]);
 
         setIsLoading(false);
 
         if (error) {
             console.error('Erro ao salvar no Supabase:', error);
             let userMessage = 'Ocorreu um erro ao salvar seu cadastro. Por favor, tente novamente.';
-            // Verifica o código de erro do PostgreSQL para violação de restrição de unicidade
             if (error.code === '23505') {
                 userMessage = 'Um cadastro com este e-mail ou CPF já existe. Por favor, use dados diferentes ou tente recuperar seu acesso.';
             }
             alert(userMessage);
-        } else if (!newLead) {
-            alert('Ocorreu um erro desconhecido ao salvar seu cadastro. Por favor, tente novamente.');
         } else {
             const fullData = { 
                 ...savedDataParsed, 
-                leadId: newLead.id,
+                leadId: leadId,
                 email: email,
                 phone: phone
             };
