@@ -21,6 +21,7 @@ const AdminLoginPage: React.FC = () => {
     });
 
     if (error) {
+      console.error("Admin Login Error:", error);
       setError(error.message);
     } else {
       navigate('/admin/dashboard');
