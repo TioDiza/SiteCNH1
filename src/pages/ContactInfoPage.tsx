@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { User, Mail, Phone } from 'lucide-react';
+import { supabase } from '../../integrations/supabase/client';
 
 const ContactInfoHeader: React.FC = () => (
     <header className="bg-white border-b border-gray-200">
@@ -40,23 +41,30 @@ const ContactInfoPage: React.FC = () => {
         setPhone(formattedPhone.substring(0, 15));
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
 
         const quizAnswers = location.state?.answers || {};
-        const contactInfo = { email, phone };
 
-        console.log("Respostas do Quiz:", quizAnswers);
-        console.log("Informações de Contato:", contactInfo);
+        const { error } = await supabase
+            .from('leads')
+            .insert([
+                { 
+                    email: email, 
+                    phone: phone,
+                    quiz_answers: quizAnswers 
+                }
+            ]);
 
-        // AQUI é onde você salvaria os dados em um banco de dados.
-        // Por enquanto, vamos apenas simular o envio.
+        setIsLoading(false);
 
-        setTimeout(() => {
-            setIsLoading(false);
+        if (error) {
+            console.error('Erro ao salvar no Supabase:', error);
+            alert('Ocorreu um erro ao salvar seu cadastro. Por favor, tente novamente.');
+        } else {
             navigate('/thank-you');
-        }, 1000);
+        }
     };
 
     return (
