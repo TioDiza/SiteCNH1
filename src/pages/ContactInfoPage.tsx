@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { User, Mail, Phone } from 'lucide-react';
 import { supabase } from '../integrations/supabase/client';
@@ -31,9 +31,19 @@ const ContactInfoPage: React.FC = () => {
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [firstName, setFirstName] = useState('');
 
-    const userData = location.state?.userData as { name: string; cpf: string; } | undefined;
-    const firstName = userData?.name.split(' ')[0];
+    useEffect(() => {
+        const savedData = sessionStorage.getItem('cnh_userData');
+        if (savedData) {
+            const parsedData = JSON.parse(savedData);
+            if (parsedData.name) {
+                setFirstName(parsedData.name.split(' ')[0]);
+            }
+        } else {
+            navigate('/login');
+        }
+    }, [navigate]);
 
     const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
@@ -49,7 +59,17 @@ const ContactInfoPage: React.FC = () => {
         setIsLoading(true);
 
         const { answers } = location.state || {};
-        const unformattedCpf = userData?.cpf.replace(/\D/g, '');
+        
+        const savedDataString = sessionStorage.getItem('cnh_userData');
+        if (!savedDataString) {
+            alert('Sua sessão expirou. Por favor, comece novamente.');
+            navigate('/login');
+            setIsLoading(false);
+            return;
+        }
+        
+        const savedDataParsed = JSON.parse(savedDataString);
+        const unformattedCpf = savedDataParsed.cpf?.replace(/\D/g, '');
 
         const { data: newLead, error } = await supabase
             .from('leads')
@@ -70,17 +90,13 @@ const ContactInfoPage: React.FC = () => {
             console.error('Erro ao salvar no Supabase:', error);
             alert('Ocorreu um erro ao salvar seu cadastro. Por favor, tente novamente.');
         } else {
-            const savedData = sessionStorage.getItem('cnh_userData');
-            let fullData = {};
-            if (savedData) {
-                fullData = { 
-                    ...JSON.parse(savedData), 
-                    leadId: newLead.id,
-                    email: email,
-                    phone: phone
-                };
-                sessionStorage.setItem('cnh_userData', JSON.stringify(fullData));
-            }
+            const fullData = { 
+                ...savedDataParsed, 
+                leadId: newLead.id,
+                email: email,
+                phone: phone
+            };
+            sessionStorage.setItem('cnh_userData', JSON.stringify(fullData));
             navigate('/eligibility', { state: { userData: fullData } });
         }
     };
