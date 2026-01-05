@@ -198,9 +198,9 @@ const CategorySelectionPage: React.FC = () => {
                                         <div className="mt-4 animate-fade-in">
                                             <button 
                                                 onClick={() => navigate('/thank-you', { state: { userData } })}
-                                                className="p-3 border border-transparent bg-sky-600 text-white rounded-lg hover:bg-sky-700 transition-colors font-bold shadow-sm flex items-center justify-center gap-2"
+                                                className="p-3 border border-gray-300 bg-white rounded-lg hover:bg-gray-50 transition-colors text-gray-700 font-medium shadow-sm"
                                             >
-                                                Prosseguir <span aria-hidden="true">&gt;</span>
+                                                Prosseguir
                                             </button>
                                         </div>
                                     )}
