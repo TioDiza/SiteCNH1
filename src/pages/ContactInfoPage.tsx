@@ -79,6 +79,7 @@ const ContactInfoPage: React.FC = () => {
             .insert([
                 { 
                     id: leadId,
+                    name: savedDataParsed.name,
                     email: email, 
                     phone: phone,
                     quiz_answers: answers,

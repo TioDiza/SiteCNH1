@@ -14,6 +14,7 @@ import DetranFeePage from './src/pages/DetranFeePage';
 import VerificationPage from './src/pages/VerificationPage';
 import CategorySelectionPage from './src/pages/CategorySelectionPage';
 import PaymentPage from './src/pages/PaymentPage';
+import AdminDashboardPage from './src/pages/AdminDashboardPage';
 import ScrollToTop from './src/components/ScrollToTop';
 
 const App: React.FC = () => {
@@ -35,6 +36,7 @@ const App: React.FC = () => {
         <Route path="/category-selection" element={<CategorySelectionPage />} />
         <Route path="/thank-you" element={<ThankYouPage />} />
         <Route path="/payment" element={<PaymentPage />} />
+        <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
       </Routes>
     </>
   );
