@@ -45,7 +45,7 @@ const ThankYouPage: React.FC = () => {
             <main className="max-w-2xl mx-auto px-4 py-12">
                 <div className="bg-white p-8 rounded-lg shadow-md border border-gray-200">
                     <img 
-                        src="/images.jpg" 
+                        src="/primeirabra.png" 
                         alt="Primeira brasileira a obter CNH com novas regras" 
                         className="w-full rounded-lg mb-6"
                     />
