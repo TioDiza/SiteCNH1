@@ -180,22 +180,20 @@ const ComprovanteCadastro: React.FC<{
 
     return (
         <div className="bg-white text-gray-800 rounded-lg border border-gray-300 p-6 font-sans text-sm w-full max-w-md shadow-2xl relative overflow-hidden">
-            {/* Watermark */}
-            <div className="absolute -top-10 -right-10 opacity-5">
-                <img src="/Gov.br_logo.svg.png" alt="Watermark" className="w-48 h-48" />
-            </div>
-            
             {/* Header */}
-            <div className="flex justify-between items-center pb-4 border-b border-gray-200">
+            <div className="flex justify-between items-start pb-4 border-b border-gray-200">
                 {logoSrc ? (
                     <img src={logoSrc} alt={`Logo DETRAN ${selectedState}`} className="h-14 w-auto" />
                 ) : (
                     <div className="h-14"></div> // Placeholder to keep height consistent
                 )}
-                <div className="text-right text-xs text-gray-600">
-                    <p className="font-bold">República Federativa do Brasil</p>
-                    <p>Ministério dos Transportes</p>
-                    <p className="font-semibold">SENATRAN</p>
+                <div className="text-right">
+                    <img src="/Gov.br_logo.svg.png" alt="gov.br" className="h-8 ml-auto mb-2" />
+                    <div className="text-xs text-gray-600">
+                        <p className="font-bold">República Federativa do Brasil</p>
+                        <p>Ministério dos Transportes</p>
+                        <p className="font-semibold">SENATRAN</p>
+                    </div>
                 </div>
             </div>
 
@@ -240,7 +238,7 @@ const ComprovanteCadastro: React.FC<{
                 </div>
                 <div>
                     <p className="text-gray-500">STATUS</p>
-                    <span className="font-bold text-sm bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full">
+                    <span className="font-bold text-sm bg-yellow-100 text-yellow-800 px-3 py-1 rounded-lg inline-block mt-1">
                         AGUARDANDO AGENDAMENTO
                     </span>
                 </div>
