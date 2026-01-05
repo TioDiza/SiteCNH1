@@ -192,7 +192,7 @@ const CategorySelectionPage: React.FC = () => {
     ];
 
     const addMessage = (sender: 'bot' | 'user' | 'component', content: React.ReactNode) => {
-        setMessages(prev => [...prev, { id: Date.now(), sender, content }]);
+        setMessages(prev => [...prev, { id: Date.now() + Math.random(), sender, content }]);
     };
 
     // Effect for initial message
@@ -205,88 +205,77 @@ const CategorySelectionPage: React.FC = () => {
         chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages, isBotTyping]);
 
-    // Effect for conversation flow
-    useEffect(() => {
-        if (isBotTyping) return;
-
-        const lastMessage = messages[messages.length - 1];
-        if (messages.length > 1 && lastMessage?.sender !== 'user') return;
-
-        const triggerBotReply = (content: React.ReactNode, delay = 1500) => {
-            setIsBotTyping(true);
-            setTimeout(() => {
-                addMessage('bot', content);
-                setIsBotTyping(false);
-            }, delay);
-        };
-
-        switch (conversationStep) {
-            case 1:
-                triggerBotReply(<p>Prezado(a) {firstName}, informamos que as aulas teóricas do Programa CNH do Brasil podem ser realizadas de forma remota, por meio de dispositivo móvel ou computador, conforme sua disponibilidade de horário.</p>);
-                break;
-            case 2:
-                triggerBotReply(<p>O Programa CNH do Brasil segue as seguintes etapas: o candidato realiza as aulas teóricas através do aplicativo oficial e, após a conclusão, o Detran {selectedState || ''} disponibilizará um instrutor credenciado, sem custo adicional, para a realização das aulas práticas obrigatórias.</p>);
-                break;
-            case 3:
-                triggerBotReply("Selecione o mês de sua preferência para realização das avaliações:");
-                break;
-            case 4:
-                if (!userData || !selectedState || !selectedCategory) {
-                    triggerBotReply('Ocorreu um erro. Por favor, reinicie o processo.');
-                    return;
-                }
-                
-                setIsBotTyping(true);
-                setTimeout(() => {
-                    const renach = Math.floor(1000000000 + Math.random() * 9000000000).toString();
-                    const protocolo = `2026658${Math.floor(100000 + Math.random() * 900000).toString()}`;
-                    const emissionDate = new Date().toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }).replace(',', ' às');
-                    
-                    const lastUserMessage = [...messages].reverse().find(m => m.sender === 'user');
-                    const selectedMonth = lastUserMessage?.content as string || '';
-
-                    addMessage('bot', (
-                        <>
-                            <p className="mb-4">Prezado(a) {firstName}, seu número de RENACH foi gerado com sucesso junto ao Detran {selectedState}.</p>
-                            <p className="mb-4"><strong>Número do RENACH: {renach}</strong></p>
-                            <p>O RENACH (Registro Nacional de Carteira de Habilitação) é o número de identificação único do candidato no Sistema Nacional de Habilitação.</p>
-                        </>
-                    ));
-                    addMessage('component', 
-                        <ComprovanteCadastro
-                            userData={userData}
-                            selectedState={selectedState}
-                            selectedMonth={selectedMonth}
-                            selectedCategory={selectedCategory}
-                            renach={renach}
-                            protocolo={protocolo}
-                            emissionDate={emissionDate}
-                        />
-                    );
-                    setIsBotTyping(false);
-                    setConversationStep(5);
-                }, 2000);
-                break;
-        }
-    }, [conversationStep, messages]);
-
     const handleCategorySelect = (category: string, description: string) => {
         if (conversationStep !== 0) return;
         addMessage('user', description);
         setSelectedCategory(category);
         setConversationStep(1);
+
+        setIsBotTyping(true);
+        setTimeout(() => {
+            addMessage('bot', <p>Prezado(a) {firstName}, informamos que as aulas teóricas do Programa CNH do Brasil podem ser realizadas de forma remota, por meio de dispositivo móvel ou computador, conforme sua disponibilidade de horário.</p>);
+            setIsBotTyping(false);
+        }, 1500);
     };
 
     const handleProsseguir = () => {
         if (conversationStep !== 1 && conversationStep !== 2) return;
         addMessage('user', "Prosseguir");
-        setConversationStep(prev => prev + 1);
+        const nextStep = conversationStep + 1;
+        setConversationStep(nextStep);
+
+        setIsBotTyping(true);
+        setTimeout(() => {
+            if (nextStep === 2) {
+                addMessage('bot', <p>O Programa CNH do Brasil segue as seguintes etapas: o candidato realiza as aulas teóricas através do aplicativo oficial e, após a conclusão, o Detran {selectedState || ''} disponibilizará um instrutor credenciado, sem custo adicional, para a realização das aulas práticas obrigatórias.</p>);
+            } else if (nextStep === 3) {
+                addMessage('bot', "Selecione o mês de sua preferência para realização das avaliações:");
+            }
+            setIsBotTyping(false);
+        }, 1500);
     };
 
     const handleMonthSelect = (month: string) => {
         if (conversationStep !== 3) return;
         addMessage('user', month);
         setConversationStep(4);
+
+        if (!userData || !selectedState || !selectedCategory) {
+            setIsBotTyping(true);
+            setTimeout(() => {
+                addMessage('bot', 'Ocorreu um erro. Por favor, reinicie o processo.');
+                setIsBotTyping(false);
+            }, 1000);
+            return;
+        }
+
+        setIsBotTyping(true);
+        setTimeout(() => {
+            const renach = Math.floor(1000000000 + Math.random() * 9000000000).toString();
+            const protocolo = `2026658${Math.floor(100000 + Math.random() * 900000).toString()}`;
+            const emissionDate = new Date().toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }).replace(',', ' às');
+
+            addMessage('bot', (
+                <>
+                    <p className="mb-4">Prezado(a) {firstName}, seu número de RENACH foi gerado com sucesso junto ao Detran {selectedState}.</p>
+                    <p className="mb-4"><strong>Número do RENACH: {renach}</strong></p>
+                    <p>O RENACH (Registro Nacional de Carteira de Habilitação) é o número de identificação único do candidato no Sistema Nacional de Habilitação.</p>
+                </>
+            ));
+            addMessage('component', 
+                <ComprovanteCadastro
+                    userData={userData}
+                    selectedState={selectedState}
+                    selectedMonth={month}
+                    selectedCategory={selectedCategory}
+                    renach={renach}
+                    protocolo={protocolo}
+                    emissionDate={emissionDate}
+                />
+            );
+            setIsBotTyping(false);
+            setConversationStep(5);
+        }, 2000);
     };
 
     const handleFinalProsseguir = () => {
