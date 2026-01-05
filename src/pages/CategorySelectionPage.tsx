@@ -129,20 +129,20 @@ const LoadingMessage: React.FC = () => (
 const CategoryOption: React.FC<{ category: string; description: string; onClick: () => void }> = ({ category, description, onClick }) => (
     <button
         onClick={onClick}
-        className="w-full text-left p-4 border border-gray-200 bg-white rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-4 shadow-sm"
+        className="w-full text-left p-4 border-2 border-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-all duration-200 flex items-center gap-4 shadow-md hover:shadow-lg transform hover:-translate-y-1"
     >
-        <span className="font-bold text-xl text-[#004381]">{category}</span>
-        <span className="text-gray-700">{description}</span>
+        <span className="font-bold text-2xl text-[#004381]">{category}</span>
+        <span className="text-gray-800 font-semibold">{description}</span>
     </button>
 );
 
 const MonthOption: React.FC<{ month: string; vagas: number; onClick: () => void }> = ({ month, vagas, onClick }) => (
     <button
         onClick={onClick}
-        className="w-full text-center p-3 border border-gray-200 bg-white rounded-lg hover:bg-gray-50 transition-colors shadow-sm"
+        className="w-full text-center p-3 border-2 border-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-1"
     >
-        <p className="font-semibold text-gray-700">{month}</p>
-        <p className="text-sm text-blue-600 font-bold">{vagas} vagas</p>
+        <p className="font-bold text-gray-800">{month}</p>
+        <p className="text-sm text-[#004381] font-extrabold uppercase">{vagas} vagas</p>
     </button>
 );
 
@@ -408,7 +408,7 @@ const CategorySelectionPage: React.FC = () => {
             case 2:
                 return (
                     <div className="mt-4 animate-fade-in">
-                        <button onClick={handleProsseguir} className="p-3 border border-gray-300 bg-white rounded-lg hover:bg-gray-50 transition-colors text-gray-700 font-medium shadow-sm">Prosseguir</button>
+                        <button onClick={handleProsseguir} className="w-full bg-[#004381] text-white px-8 py-3 rounded-lg font-bold text-lg hover:bg-blue-900 transition-all shadow-md active:scale-95 text-center">Prosseguir</button>
                     </div>
                 );
             case 3:
@@ -420,7 +420,7 @@ const CategorySelectionPage: React.FC = () => {
             case 5:
                 return (
                     <div className="mt-4 animate-fade-in">
-                        <button onClick={handleFinalProsseguir} className="p-3 border border-gray-300 bg-white rounded-lg hover:bg-gray-50 transition-colors text-gray-700 font-medium shadow-sm">Prosseguir</button>
+                        <button onClick={handleFinalProsseguir} className="w-full bg-[#004381] text-white px-8 py-3 rounded-lg font-bold text-lg hover:bg-blue-900 transition-all shadow-md active:scale-95 text-center">Prosseguir</button>
                     </div>
                 );
             default:
