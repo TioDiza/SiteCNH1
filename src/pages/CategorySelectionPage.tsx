@@ -80,6 +80,15 @@ const LoadingMessage: React.FC = () => (
     </div>
 );
 
+const CategoryOption: React.FC<{ category: string; description: string; onClick: () => void }> = ({ category, description, onClick }) => (
+    <button
+        onClick={onClick}
+        className="w-full text-left p-4 border border-gray-200 bg-white rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-4 shadow-sm"
+    >
+        <span className="font-bold text-xl text-[#004381]">{category}</span>
+        <span className="text-gray-700">{description}</span>
+    </button>
+);
 
 const CategorySelectionPage: React.FC = () => {
     const navigate = useNavigate();
@@ -90,6 +99,12 @@ const CategorySelectionPage: React.FC = () => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [step, setStep] = useState<'initial' | 'loading' | 'final'>('initial');
     const chatEndRef = useRef<HTMLDivElement>(null);
+
+    const categoryOptions = [
+        { category: "A", description: "Categoria A - Motocicletas" },
+        { category: "B", description: "Categoria B - Carros" },
+        { category: "AB", description: "Categoria AB - Motocicletas e Carros" },
+    ];
 
     useEffect(() => {
         setMessages([{
@@ -141,39 +156,37 @@ const CategorySelectionPage: React.FC = () => {
         }, 2500);
     };
 
-    const categoryOptions = [
-        { category: "A", description: "Categoria A" },
-        { category: "B", description: "Categoria B" },
-        { category: "AB", description: "Categoria AB" },
-    ];
-
     return (
         <div className="bg-gray-100 min-h-screen flex flex-col">
             <CategorySelectionHeader userName={firstName} />
             <main className="flex-1 max-w-xl w-full mx-auto px-4 py-8 flex flex-col">
                 <div className="flex-1 space-y-6 overflow-y-auto pb-4">
                     {messages.map(msg => {
-                        if (msg.sender === 'bot') return <BotMessage key={msg.id}>{msg.content}</BotMessage>;
+                        if (msg.sender === 'bot') {
+                            return (
+                                <div key={msg.id}>
+                                    <BotMessage>{msg.content}</BotMessage>
+                                    {msg.id === 1 && step === 'initial' && (
+                                        <div className="space-y-3 mt-4 animate-fade-in">
+                                            {categoryOptions.map(opt => (
+                                                <CategoryOption
+                                                    key={opt.category}
+                                                    category={opt.category}
+                                                    description={opt.description}
+                                                    onClick={() => handleCategorySelect(opt.description)}
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        }
                         if (msg.sender === 'user') return <UserMessage key={msg.id}>{msg.content}</UserMessage>;
                         if (msg.sender === 'loading') return <div key={msg.id}>{msg.content}</div>;
                         return null;
                     })}
                     <div ref={chatEndRef} />
                 </div>
-
-                {step === 'initial' && (
-                    <div className="mt-6 flex justify-end gap-3">
-                        {categoryOptions.map(opt => (
-                             <button 
-                                key={opt.category}
-                                onClick={() => handleCategorySelect(opt.description)}
-                                className="p-3 border border-gray-300 bg-white rounded-lg hover:bg-gray-50 transition-colors text-gray-700 font-medium"
-                            >
-                                {opt.description}
-                            </button>
-                        ))}
-                    </div>
-                )}
             </main>
         </div>
     );
