@@ -5,6 +5,7 @@ import LoginPage from './src/pages/LoginPage';
 import ConfirmationPage from './src/pages/ConfirmationPage';
 import QuizPage from './src/pages/QuizPage';
 import ContactInfoPage from './src/pages/ContactInfoPage';
+import EligibilityPage from './src/pages/EligibilityPage';
 import ThankYouPage from './src/pages/ThankYouPage';
 
 const App: React.FC = () => {
@@ -15,6 +16,7 @@ const App: React.FC = () => {
       <Route path="/confirmation" element={<ConfirmationPage />} />
       <Route path="/quiz" element={<QuizPage />} />
       <Route path="/contact-info" element={<ContactInfoPage />} />
+      <Route path="/eligibility" element={<EligibilityPage />} />
       <Route path="/thank-you" element={<ThankYouPage />} />
     </Routes>
   );

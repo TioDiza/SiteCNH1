@@ -63,7 +63,7 @@ const ContactInfoPage: React.FC = () => {
             console.error('Erro ao salvar no Supabase:', error);
             alert('Ocorreu um erro ao salvar seu cadastro. Por favor, tente novamente.');
         } else {
-            navigate('/thank-you');
+            navigate('/eligibility');
         }
     };
 
