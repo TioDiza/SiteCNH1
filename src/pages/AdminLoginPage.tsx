@@ -28,7 +28,7 @@ const AdminLoginPage: React.FC = () => {
     } else {
       navigate('/admin/dashboard');
     }
-    setIsLoading(false);
+    setIsLoading(false); // Resetar isLoading mesmo em caso de erro
   };
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -50,20 +50,6 @@ const AdminLoginPage: React.FC = () => {
       console.error("Admin Register Error:", signUpError);
       setError(signUpError.message);
     } else if (data.user) {
-      // A função handle_new_user no banco de dados já cria o perfil com a role 'user'.
-      // Para administradores, precisamos atualizar essa role.
-      // Isso deve ser feito com privilégios de administrador (por exemplo, em uma Edge Function)
-      // ou, para fins de desenvolvimento, podemos fazer uma atualização direta aqui,
-      // mas é crucial entender que isso ignora RLS se o usuário não tiver permissão.
-      // Para um ambiente de produção, a atualização da role deveria ser feita por um admin
-      // já logado ou por uma função de backend com service_role.
-
-      // Para fins de demonstração e para fazer funcionar agora, vamos tentar atualizar a role.
-      // Note que esta operação pode falhar se as políticas de RLS para UPDATE forem muito restritivas
-      // para o usuário recém-criado (que ainda não é admin).
-      // A forma mais robusta seria ter um admin existente que aprova e define a role,
-      // ou uma Edge Function que faz essa atualização com service_role.
-
       const { error: updateProfileError } = await supabase
         .from('profiles')
         .update({ role: 'admin' })
@@ -72,8 +58,6 @@ const AdminLoginPage: React.FC = () => {
       if (updateProfileError) {
         console.error("Error updating admin profile role:", updateProfileError);
         setError("Erro ao definir a role de administrador. O usuário foi criado, mas a role pode não ter sido atualizada. Por favor, verifique manualmente no banco de dados.");
-        // Opcional: Deletar o usuário recém-criado se a atualização da role falhar e for crítico
-        // await supabase.auth.admin.deleteUser(data.user.id);
       } else {
         alert("Administrador cadastrado com sucesso! Você pode fazer login agora.");
         setIsRegistering(false); // Volta para a tela de login
@@ -82,7 +66,7 @@ const AdminLoginPage: React.FC = () => {
         setName('');
       }
     }
-    setIsLoading(false);
+    setIsLoading(false); // Resetar isLoading mesmo em caso de erro
   };
 
   return (
