@@ -10,24 +10,28 @@ const AdminLoginPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setError(null);
+    console.log("[AdminLoginPage] Tentando fazer login...");
 
-    const { data, error: signInError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (signInError) {
-      console.error("[AdminLoginPage] Login failed:", signInError);
-      setError(signInError.message);
-      setIsLoading(false);
-    } else {
-      console.log("[AdminLoginPage] Login successful, redirecting to dashboard for user:", data.user?.email);
-      navigate('/admin/dashboard');
-    }
+    supabase.auth.signInWithPassword({ email, password })
+      .then(({ data, error: signInError }) => {
+        if (signInError) {
+          console.error("[AdminLoginPage] Falha no login:", signInError);
+          setError(signInError.message);
+          setIsLoading(false);
+        } else {
+          console.log("[AdminLoginPage] Login bem-sucedido, redirecionando...", data.user?.email);
+          navigate('/admin/dashboard');
+        }
+      })
+      .catch(err => {
+        console.error("[AdminLoginPage] Erro inesperado na promise de login:", err);
+        setError("Ocorreu um erro inesperado. Tente novamente.");
+        setIsLoading(false);
+      });
   };
 
   return (
