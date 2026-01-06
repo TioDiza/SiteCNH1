@@ -27,7 +27,7 @@ const PaymentPage: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [isCopied, setIsCopied] = useState(false);
 
-    const FEE_AMOUNT = 87.90;
+    const FEE_AMOUNT = 2.00;
 
     useEffect(() => {
         let data: { name: string; cpf: string; leadId: string; email: string; phone: string; } | null = null;
