@@ -41,7 +41,7 @@ serve(async (req) => {
     // --- PASSO IMPORTANTE PARA TESTE LOCAL ---
     // Cole sua URL do ngrok aqui, adicionando o nome da função no final.
     // Exemplo: "https://seu-codigo-aleatorio.ngrok.io/payment-webhook"
-    const callbackUrl = 'COLE_SUA_URL_DO_NGROK_AQUI/payment-webhook';
+    const callbackUrl = 'https://unindulging-alise-punishingly.ngrok-free.dev/payment-webhook';
     
     // A URL de produção original está comentada abaixo para você restaurar depois.
     // const callbackUrl = 'https://lubhskftgevcgfkzxozx.supabase.co/functions/v1/payment-webhook';
