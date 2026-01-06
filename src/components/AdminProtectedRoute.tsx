@@ -7,11 +7,10 @@ const AdminProtectedRoute: React.FC = () => {
   const { loading, session, profile } = useAuth();
 
   // Adicionando logs para depuração
-  console.log("[AdminProtectedRoute] Loading:", loading);
-  console.log("[AdminProtectedRoute] Session:", session);
-  console.log("[AdminProtectedRoute] Profile:", profile);
+  console.log("[AdminProtectedRoute] Checking auth state...", { loading, session, profile });
 
   if (loading) {
+    console.log("[AdminProtectedRoute] State is loading. Displaying spinner.");
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
@@ -20,11 +19,16 @@ const AdminProtectedRoute: React.FC = () => {
   }
 
   if (!session || profile?.role !== 'admin') {
-    console.log("[AdminProtectedRoute] Redirecting to /admin/login: No session or not admin role.");
+    console.error("[AdminProtectedRoute] REDIRECTING TO LOGIN. Reason:", {
+        isSessionMissing: !session,
+        isProfileMissing: !profile,
+        profileRole: profile?.role,
+        isRoleAdmin: profile?.role === 'admin',
+    });
     return <Navigate to="/admin/login" replace />;
   }
 
-  console.log("[AdminProtectedRoute] Access granted to dashboard.");
+  console.log("[AdminProtectedRoute] Access granted. Rendering dashboard.");
   return <Outlet />;
 };
 

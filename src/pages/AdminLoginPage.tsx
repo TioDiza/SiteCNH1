@@ -15,18 +15,19 @@ const AdminLoginPage: React.FC = () => {
     setIsLoading(true);
     setError(null);
 
-    const { error: signInError } = await supabase.auth.signInWithPassword({
+    const { data, error: signInError } = await supabase.auth.signInWithPassword({
       email,
       password,
     });
 
     if (signInError) {
-      console.error("Admin Login Error:", signInError);
+      console.error("[AdminLoginPage] Login failed:", signInError);
       setError(signInError.message);
+      setIsLoading(false);
     } else {
+      console.log("[AdminLoginPage] Login successful, redirecting to dashboard for user:", data.user?.email);
       navigate('/admin/dashboard');
     }
-    setIsLoading(false);
   };
 
   return (
