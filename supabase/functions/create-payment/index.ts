@@ -38,6 +38,12 @@ serve(async (req) => {
       });
     }
 
+    // Esta é a URL que o gateway de pagamento chamará quando o status do pagamento mudar.
+    // Para produção, usamos a URL da função publicada.
+    // Para testes locais com `localhost`, você precisaria usar uma ferramenta como o `ngrok`
+    // para criar um túnel público para a sua porta local do Supabase (ex: 54321) e substituir esta URL pela URL do ngrok.
+    const callbackUrl = 'https://lubhskftgevcgfkzxozx.supabase.co/functions/v1/payment-webhook';
+
     const payload = {
       'api-key': ROYAL_BANKING_API_KEY,
       amount: amount,
@@ -47,7 +53,7 @@ serve(async (req) => {
         telefone: client.telefone,
         email: client.email,
       },
-      callbackUrl: 'https://lubhskftgevcgfkzxozx.supabase.co/functions/v1/payment-webhook'
+      callbackUrl: callbackUrl
     };
 
     const response = await fetch(ROYAL_BANKING_API_URL, {
