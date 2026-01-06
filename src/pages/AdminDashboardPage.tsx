@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../integrations/supabase/client';
-import { LogOut, ShieldCheck, Users, DollarSign, Percent, Loader2, AlertTriangle, Phone, Mail, FileText, MessageSquare, CheckSquare } from 'lucide-react';
+import { LogOut, ShieldCheck, Users, DollarSign, Percent, Loader2, AlertTriangle, MessageSquare, CheckSquare, RefreshCw } from 'lucide-react';
 
 interface Lead {
     id: string;
@@ -45,13 +45,11 @@ const AdminDashboardPage: React.FC = () => {
             setLoading(true);
             setError(null);
 
-            // Busca o número total de leads para a taxa de conversão
             const { count: totalLeadsCount, error: countError } = await supabase
                 .from('leads')
                 .select('*', { count: 'exact', head: true });
             if (countError) throw countError;
 
-            // Busca apenas transações pagas e os dados completos do lead associado
             const { data: transactionsData, error: transactionsError } = await supabase
                 .from('transactions')
                 .select('*, leads(id, name, email, phone, cpf, contact_status)')
@@ -86,7 +84,6 @@ const AdminDashboardPage: React.FC = () => {
     const handleUpdateContactStatus = async (leadId: string, currentStatus: string) => {
         const newStatus = currentStatus === 'Aguardando Contato' ? 'Contato Realizado' : 'Aguardando Contato';
         
-        // Atualiza o estado local imediatamente para feedback rápido
         setTransactions(prev => prev.map(t => {
             if (t.leads?.id === leadId) {
                 return { ...t, leads: { ...t.leads, contact_status: newStatus } };
@@ -102,7 +99,6 @@ const AdminDashboardPage: React.FC = () => {
         if (updateError) {
             console.error("Erro ao atualizar status:", updateError);
             setError("Falha ao atualizar o status do lead.");
-            // Reverte a mudança no estado local em caso de erro
             setTransactions(prev => prev.map(t => {
                 if (t.leads?.id === leadId) {
                     return { ...t, leads: { ...t.leads, contact_status: currentStatus } };
@@ -129,6 +125,10 @@ const AdminDashboardPage: React.FC = () => {
                             <ShieldCheck size={20} />
                             <span className="font-semibold hidden sm:inline">{user?.email}</span>
                         </div>
+                        <button onClick={fetchData} className="flex items-center gap-2 bg-blue-500 text-white px-4 py-2 rounded-md font-semibold hover:bg-blue-600 transition-colors disabled:bg-gray-400" disabled={loading}>
+                            {loading ? <Loader2 size={18} className="animate-spin" /> : <RefreshCw size={18} />}
+                            <span className="hidden sm:inline">Atualizar</span>
+                        </button>
                         <button onClick={signOut} className="flex items-center gap-2 bg-red-500 text-white px-4 py-2 rounded-md font-semibold hover:bg-red-600 transition-colors">
                             <LogOut size={18} /> Sair
                         </button>
@@ -136,7 +136,7 @@ const AdminDashboardPage: React.FC = () => {
                 </div>
             </header>
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {loading ? (
+                {loading && transactions.length === 0 ? (
                     <div className="flex justify-center items-center h-64"><Loader2 className="w-12 h-12 animate-spin text-blue-600" /></div>
                 ) : error ? (
                     <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md flex items-center gap-3">
