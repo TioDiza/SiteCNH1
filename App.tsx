@@ -17,6 +17,7 @@ import PaymentPage from './src/pages/PaymentPage';
 import AdminDashboardPage from './src/pages/AdminDashboardPage';
 import AdminLoginPage from './src/pages/AdminLoginPage';
 import AdminProtectedRoute from './src/components/AdminProtectedRoute';
+import AdminAuthRoute from './src/components/AdminAuthRoute';
 import { AuthProvider } from './src/contexts/AuthContext';
 import ScrollToTop from './src/components/ScrollToTop';
 
@@ -42,7 +43,9 @@ const App: React.FC = () => {
         <Route path="/payment" element={<PaymentPage />} />
 
         {/* Admin Routes */}
-        <Route path="/admin/login" element={<AdminLoginPage />} />
+        <Route element={<AdminAuthRoute />}>
+          <Route path="/admin/login" element={<AdminLoginPage />} />
+        </Route>
         <Route element={<AdminProtectedRoute />}>
           <Route path="/admin/dashboard" element={<AdminDashboardPage />} />
         </Route>

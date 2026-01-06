@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { supabase } from '../integrations/supabase/client';
 import { LogIn, Loader2, AlertTriangle, Mail, Lock } from 'lucide-react';
 
@@ -8,7 +7,6 @@ const AdminLoginPage: React.FC = () => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,9 +22,8 @@ const AdminLoginPage: React.FC = () => {
 
     if (signInError) {
       setError(signInError.message);
-    } else {
-      navigate('/admin/dashboard');
     }
+    // A navegação agora é tratada pelo AdminAuthRoute
   };
 
   return (
