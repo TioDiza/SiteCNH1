@@ -14,23 +14,7 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  const WEBHOOK_SECRET = Deno.env.get('WEBHOOK_SECRET_TOKEN');
-  if (!WEBHOOK_SECRET) {
-    console.error('[payment-webhook] Critical Error: WEBHOOK_SECRET_TOKEN is not set in Supabase secrets.');
-    return new Response('Webhook secret not configured', { status: 500 });
-  }
-
-  // --- Verificação do Token de Segurança no Caminho da URL ---
-  const url = new URL(req.url);
-  const pathParts = url.pathname.split('/');
-  const token = pathParts.pop(); // Pega a última parte do caminho, que deve ser o token
-
-  if (token !== WEBHOOK_SECRET) {
-    console.warn(`[payment-webhook] Unauthorized access attempt with invalid token from path: ${token}`);
-    return new Response('Unauthorized', { status: 401 });
-  }
-  console.log('[payment-webhook] Token validation from path successful.');
-  // --- Fim da Verificação ---
+  // A verificação de token foi removida, pois não se aplica ao webhook de Cash In.
 
   const supabaseAdmin = createClient(
     Deno.env.get('SUPABASE_URL') ?? '',
@@ -67,6 +51,7 @@ const handler = async (req: Request): Promise<Response> => {
     case 'paid':
       dbStatus = 'paid';
       break;
+    // Os outros status são mantidos caso você use esta URL para outros webhooks no futuro.
     case 'SaquePago':
       dbStatus = 'paid';
       break;

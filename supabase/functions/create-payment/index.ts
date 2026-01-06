@@ -8,7 +8,6 @@ const corsHeaders = {
 
 const ROYAL_BANKING_API_URL = 'https://api.royalbanking.com.br/v1/gateway/';
 const ROYAL_BANKING_API_KEY = Deno.env.get('ROYAL_BANKING_API_KEY');
-const WEBHOOK_SECRET = Deno.env.get('WEBHOOK_SECRET_TOKEN');
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -20,8 +19,8 @@ serve(async (req) => {
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
   );
 
-  if (!ROYAL_BANKING_API_KEY || !WEBHOOK_SECRET) {
-    console.error('Um ou mais segredos (ROYAL_BANKING_API_KEY, WEBHOOK_SECRET_TOKEN) não estão definidos.');
+  if (!ROYAL_BANKING_API_KEY) {
+    console.error('O segredo ROYAL_BANKING_API_KEY não está definido.');
     return new Response(JSON.stringify({ error: 'Configuração do servidor incompleta.' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
@@ -38,12 +37,10 @@ serve(async (req) => {
       });
     }
 
-    // --- URL de Callback com Token de Segurança no Caminho ---
+    // --- URL de Callback Simples para Cash In ---
     // Para testes locais com ngrok, descomente a linha abaixo e comente a de produção.
-    // const baseCallbackUrl = 'https://unindulging-alise-punishingly.ngrok-free.dev/payment-webhook';
-    const baseCallbackUrl = 'https://lubhskftgevcgfkzxozx.supabase.co/functions/v1/payment-webhook';
-    
-    const callbackUrl = `${baseCallbackUrl}/${WEBHOOK_SECRET}`;
+    // const callbackUrl = 'https://unindulging-alise-punishingly.ngrok-free.dev/payment-webhook';
+    const callbackUrl = 'https://lubhskftgevcgfkzxozx.supabase.co/functions/v1/payment-webhook';
 
     const payload = {
       'api-key': ROYAL_BANKING_API_KEY,
@@ -54,7 +51,7 @@ serve(async (req) => {
         telefone: client.telefone,
         email: client.email,
       },
-      callbackUrl: callbackUrl
+      callbackUrl: callbackUrl // URL limpa, sem token
     };
 
     const response = await fetch(ROYAL_BANKING_API_URL, {
