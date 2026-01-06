@@ -26,7 +26,7 @@ const PaymentPage: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isCopied, setIsCopied] = useState(false);
-    const [feeAmount] = useState(1.00); // Valor alterado para teste
+    const [feeAmount] = useState(87.90);
 
     useEffect(() => {
         let data: { name: string; cpf: string; leadId: string; email: string; phone: string; } | null = null;
