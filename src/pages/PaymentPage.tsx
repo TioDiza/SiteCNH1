@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { User, Loader2, ClipboardCopy, CheckCircle, AlertTriangle, Smartphone, Info, ArrowRight } from 'lucide-react';
+import { User, Loader2, ClipboardCopy, CheckCircle, AlertTriangle, Smartphone, Info } from 'lucide-react';
 import { supabase } from '../integrations/supabase/client';
 
 const PaymentHeader: React.FC<{ userName?: string }> = ({ userName }) => (
@@ -90,16 +90,39 @@ const PaymentPage: React.FC = () => {
         }
     }, []);
 
+    // Listener para aguardar a confirmação do pagamento via webhook
+    useEffect(() => {
+        if (!paymentData) return;
+
+        const channel = supabase
+            .channel(`transactions:gateway_transaction_id=eq.${paymentData.transactionId}`)
+            .on(
+                'postgres_changes',
+                { 
+                    event: 'UPDATE', 
+                    schema: 'public', 
+                    table: 'transactions', 
+                    filter: `gateway_transaction_id=eq.${paymentData.transactionId}` 
+                },
+                (payload) => {
+                    if (payload.new.status === 'paid') {
+                        navigate('/payment-success');
+                    }
+                }
+            )
+            .subscribe();
+
+        return () => {
+            supabase.removeChannel(channel);
+        };
+    }, [paymentData, navigate]);
+
     const handleCopyToClipboard = () => {
         if (paymentData) {
             navigator.clipboard.writeText(paymentData.pixCode);
             setIsCopied(true);
             setTimeout(() => setIsCopied(false), 2000);
         }
-    };
-
-    const handleManualConfirmation = () => {
-        navigate('/payment-success');
     };
 
     const firstName = userData?.name.split(' ')[0];
@@ -160,7 +183,7 @@ const PaymentPage: React.FC = () => {
                                 R$ {feeAmount.toFixed(2).replace('.', ',')}
                             </p>
                             
-                            <div className="bg-yellow-100 text-yellow-800 font-semibold px-4 py-2 rounded-full my-4 text-sm">
+                            <div className="bg-yellow-100 text-yellow-800 font-semibold px-4 py-2 rounded-full my-4 text-sm animate-pulse">
                                 Aguardando pagamento...
                             </div>
 
@@ -184,17 +207,6 @@ const PaymentPage: React.FC = () => {
                                 className="w-full bg-[#0d6efd] text-white py-3 rounded-lg font-bold text-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
                             >
                                 {isCopied ? <><CheckCircle size={20} /> Copiado!</> : <><ClipboardCopy size={20} /> Copiar Código PIX</>}
-                            </button>
-
-                            <div className="w-full border-t my-8"></div>
-
-                            <p className="text-gray-600 mb-4">Após realizar o pagamento, clique no botão abaixo para prosseguir.</p>
-                            <button 
-                                onClick={handleManualConfirmation}
-                                className="w-full bg-green-600 text-white py-3 rounded-lg font-bold text-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
-                            >
-                                Já paguei, continuar
-                                <ArrowRight size={20} />
                             </button>
 
                             <p className="text-xs text-gray-400 mt-6">ID da Transação: {paymentData.transactionId}</p>
