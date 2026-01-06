@@ -68,14 +68,6 @@ const StarlinkCheckoutPage: React.FC = () => {
             name: formData.name,
             cpf: formData.cpf.replace(/\D/g, ''),
             phone: formData.phone,
-            address: {
-                cep: formData.cep,
-                street: formData.street,
-                number: formData.number,
-                neighborhood: formData.neighborhood,
-                city: formData.city,
-                state: formData.state,
-            }
         };
 
         const { data, error: functionError } = await supabase.functions.invoke('upsert-starlink-customer', {
