@@ -24,14 +24,11 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (_event, currentSession) => {
-      // Sempre que o estado de autenticação mudar, entramos em modo de carregamento
-      setLoading(true);
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       setSession(currentSession);
       setUser(currentSession?.user ?? null);
 
       if (currentSession?.user) {
-        // Se houver um usuário, buscamos o perfil dele
         const { data: profileData, error } = await supabase
           .from('profiles')
           .select('role')
@@ -45,21 +42,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           setProfile(profileData);
         }
       } else {
-        // Se não houver usuário, limpamos o perfil
         setProfile(null);
       }
-      // Finalizamos o carregamento após buscar todas as informações
-      setLoading(false);
-    });
-
-    // O listener acima é acionado no carregamento inicial da página com o evento 'INITIAL_SESSION',
-    // então não precisamos de uma função separada para buscar a sessão inicial.
-    // Isso simplifica o código e evita problemas de concorrência.
-    // Apenas garantimos que, se não houver sessão alguma, o carregamento pare.
-    supabase.auth.getSession().then(({ data: { session } }) => {
-        if (!session) {
-            setLoading(false);
-        }
+      
+      // O estado de 'loading' deve ser gerenciado apenas para o carregamento inicial da sessão.
+      // Após o primeiro evento, as atualizações de sessão acontecem em segundo plano.
+      if (event === 'INITIAL_SESSION') {
+        setLoading(false);
+      }
     });
 
     return () => {
