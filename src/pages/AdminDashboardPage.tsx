@@ -34,7 +34,7 @@ interface StarlinkCustomer {
         neighborhood: string;
         city: string;
         state: string;
-    };
+    } | null;
     created_at: string;
     transactions: { status: string, created_at: string }[];
 }
@@ -157,7 +157,7 @@ const AdminDashboardPage: React.FC = () => {
                     </div>
                 ) : (
                     <div id="starlink-content">
-                        <div className="bg-white p-6 rounded-lg shadow-md"><h2 className="text-xl font-bold text-gray-800 mb-4">Clientes Starlink</h2><div className="overflow-x-auto"><table className="w-full text-sm text-left text-gray-500"><thead className="text-xs text-gray-700 uppercase bg-gray-50"><tr><th scope="col" className="px-4 py-3">Cliente</th><th scope="col" className="px-4 py-3">Contato</th><th scope="col" className="px-4 py-3">Endereço</th><th scope="col" className="px-4 py-3">Data Cadastro</th><th scope="col" className="px-4 py-3">Status Pagamento</th></tr></thead><tbody>{starlinkCustomers.map(c => (<tr key={c.id} className="bg-white border-b hover:bg-gray-50"><td className="px-4 py-4 font-medium text-gray-900">{c.name}<br/><span className="font-normal text-gray-500">{c.cpf}</span></td><td className="px-4 py-4">{c.phone}</td><td className="px-4 py-4">{`${c.address.street}, ${c.address.number} - ${c.address.neighborhood}, ${c.address.city} - ${c.address.state}, ${c.address.cep}`}</td><td className="px-4 py-4">{formatDate(c.created_at)}</td><td className="px-4 py-4"><span className={`px-2 py-1 rounded-full text-xs font-semibold ${c.transactions[0]?.status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{c.transactions[0]?.status === 'paid' ? 'Pago' : 'Pendente'}</span></td></tr>))}</tbody></table></div></div>
+                        <div className="bg-white p-6 rounded-lg shadow-md"><h2 className="text-xl font-bold text-gray-800 mb-4">Clientes Starlink</h2><div className="overflow-x-auto"><table className="w-full text-sm text-left text-gray-500"><thead className="text-xs text-gray-700 uppercase bg-gray-50"><tr><th scope="col" className="px-4 py-3">Cliente</th><th scope="col" className="px-4 py-3">Contato</th><th scope="col" className="px-4 py-3">Endereço</th><th scope="col" className="px-4 py-3">Data Cadastro</th><th scope="col" className="px-4 py-3">Status Pagamento</th></tr></thead><tbody>{starlinkCustomers.map(c => (<tr key={c.id} className="bg-white border-b hover:bg-gray-50"><td className="px-4 py-4 font-medium text-gray-900">{c.name}<br/><span className="font-normal text-gray-500">{c.cpf}</span></td><td className="px-4 py-4">{c.phone}</td><td className="px-4 py-4">{c.address ? `${c.address.street}, ${c.address.number} - ${c.address.neighborhood}, ${c.address.city} - ${c.address.state}, ${c.address.cep}` : 'Endereço não informado'}</td><td className="px-4 py-4">{formatDate(c.created_at)}</td><td className="px-4 py-4"><span className={`px-2 py-1 rounded-full text-xs font-semibold ${c.transactions[0]?.status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{c.transactions[0]?.status === 'paid' ? 'Pago' : 'Pendente'}</span></td></tr>))}</tbody></table></div></div>
                     </div>
                 )}
             </main>
