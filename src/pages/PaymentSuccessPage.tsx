@@ -67,10 +67,9 @@ const PaymentSuccessPage: React.FC = () => {
         }
 
         setIsUpdating(true);
-        const { error } = await supabase
-            .from('leads')
-            .update({ phone: newPhone })
-            .eq('id', userData.leadId);
+        const { error } = await supabase.functions.invoke('update-lead-phone', {
+            body: { leadId: userData.leadId, phone: newPhone },
+        });
         setIsUpdating(false);
 
         if (error) {
