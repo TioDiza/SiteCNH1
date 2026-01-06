@@ -14,7 +14,6 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response(null, { headers: corsHeaders });
   }
 
-  // --- Verificação do Token de Segurança ---
   const WEBHOOK_SECRET = Deno.env.get('WEBHOOK_SECRET_TOKEN');
   if (!WEBHOOK_SECRET) {
     console.error('[payment-webhook] Critical Error: WEBHOOK_SECRET_TOKEN is not set in Supabase secrets.');
@@ -29,7 +28,6 @@ const handler = async (req: Request): Promise<Response> => {
     return new Response('Unauthorized', { status: 401 });
   }
   console.log('[payment-webhook] Token validation successful.');
-  // --- Fim da Verificação ---
 
   const supabaseAdmin = createClient(
     Deno.env.get('SUPABASE_URL') ?? '',
@@ -41,7 +39,7 @@ const handler = async (req: Request): Promise<Response> => {
     const bodyText = await req.text();
     if (!bodyText) {
       console.warn('[payment-webhook] Received empty request body.');
-      return new Response('OK (empty body)', { headers: corsHeaders, status: 200 });
+      return new Response(JSON.stringify(200), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
     }
     payload = JSON.parse(bodyText);
     console.log('[payment-webhook] Webhook payload parsed successfully:', payload);
@@ -59,7 +57,7 @@ const handler = async (req: Request): Promise<Response> => {
 
   if (!transactionId || !status) {
       console.warn('[payment-webhook] Webhook received without transactionId or status. Payload:', payload);
-      return new Response('OK (missing data)', { headers: corsHeaders, status: 200 });
+      return new Response(JSON.stringify(200), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
   }
 
   switch (status) {
@@ -80,7 +78,7 @@ const handler = async (req: Request): Promise<Response> => {
        break;
     default:
       console.warn(`[payment-webhook] Received unhandled webhook status: '${status}'`);
-      return new Response('OK (unhandled status)', { headers: corsHeaders, status: 200 });
+      return new Response(JSON.stringify(200), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
   }
 
   const { error } = await supabaseAdmin
@@ -94,7 +92,7 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`[payment-webhook] DB Success: Successfully updated transaction ${transactionId} to status ${dbStatus}`);
   }
 
-  return new Response('OK', { headers: corsHeaders, status: 200 });
+  return new Response(JSON.stringify(200), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
 };
 
 serve(async (req) => {
