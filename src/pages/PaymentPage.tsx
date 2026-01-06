@@ -26,21 +26,21 @@ const PaymentPage: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isCopied, setIsCopied] = useState(false);
-
-    const FEE_AMOUNT = 2.00;
+    const [feeAmount, setFeeAmount] = useState(0);
 
     useEffect(() => {
+        const randomAmount = Math.round((Math.random() + 1) * 100) / 100;
+        setFeeAmount(randomAmount);
+
         let data: { name: string; cpf: string; leadId: string; email: string; phone: string; } | null = null;
         
         const savedData = sessionStorage.getItem('cnh_userData');
         
-        // Log para depuração
         console.log("Dados brutos da sessão na página de pagamento:", savedData);
 
         if (savedData) {
             try {
                 data = JSON.parse(savedData);
-                // Log para depuração
                 console.log("Dados da sessão após o parse:", data);
             } catch (e) {
                 console.error("Erro ao fazer parse dos dados da sessão:", e);
@@ -71,7 +71,7 @@ const PaymentPage: React.FC = () => {
                 };
 
                 const { data: paymentResult, error: functionError } = await supabase.functions.invoke('create-payment', {
-                    body: { client: clientPayload, amount: FEE_AMOUNT, lead_id: data.leadId },
+                    body: { client: clientPayload, amount: randomAmount, lead_id: data.leadId },
                 });
 
                 if (functionError) {
@@ -164,7 +164,7 @@ const PaymentPage: React.FC = () => {
                         <div className="flex flex-col items-center text-center animate-fade-in">
                             <p className="text-lg font-semibold text-gray-800">Taxa única de emissão</p>
                             <p className="text-5xl font-bold text-gray-900 my-2">
-                                R$ {FEE_AMOUNT.toFixed(2).replace('.', ',')}
+                                R$ {feeAmount.toFixed(2).replace('.', ',')}
                             </p>
                             
                             <div className="bg-yellow-100 text-yellow-800 font-semibold px-4 py-2 rounded-full my-4 text-sm">
