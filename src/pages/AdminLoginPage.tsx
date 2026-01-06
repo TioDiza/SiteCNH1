@@ -37,6 +37,7 @@ const AdminLoginPage: React.FC = () => {
     setError(null);
 
     try {
+      // 1. Criar o usuário no Supabase Auth
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
@@ -48,26 +49,32 @@ const AdminLoginPage: React.FC = () => {
       });
 
       if (signUpError) {
-        console.error("Admin Register Error:", signUpError);
+        console.error("Admin Register Error (signUp):", signUpError);
         setError(signUpError.message);
-        return; // Sai da função se houver erro no signUp
+        return;
       }
 
       if (data.user) {
-        // A função handle_new_user() no Supabase já cria um perfil com role 'user'.
-        // Precisamos atualizar essa role para 'admin'.
-        const { error: updateProfileError } = await supabase
-          .from('profiles')
-          .update({ role: 'admin' })
-          .eq('id', data.user.id);
+        // 2. Chamar a Edge Function para atualizar a role do perfil para 'admin'
+        const { data: edgeFunctionData, error: edgeFunctionError } = await supabase.functions.invoke('update-admin-role', {
+          body: { user_id: data.user.id },
+        });
 
-        if (updateProfileError) {
-          console.error("Error updating admin profile role:", updateProfileError);
-          setError("Erro ao definir a role de administrador. O usuário foi criado, mas a role pode não ter sido atualizada. Por favor, verifique manualmente no banco de dados.");
-          return; // Sai da função se houver erro no update
+        if (edgeFunctionError) {
+          console.error("Admin Register Error (Edge Function):", edgeFunctionError);
+          setError(edgeFunctionError.message || "Erro ao definir a role de administrador via Edge Function.");
+          // O usuário foi criado, mas a role pode não ter sido atualizada.
+          // Pode ser necessário verificar manualmente no banco de dados.
+          return;
+        }
+        
+        if (edgeFunctionData && edgeFunctionData.error) {
+            console.error("Admin Register Error (Edge Function Response):", edgeFunctionData.error);
+            setError(edgeFunctionData.error);
+            return;
         }
 
-        alert("Administrador cadastrado com sucesso! Você pode fazer login agora.");
+        alert("Administrador cadastrado com sucesso! Um e-mail de confirmação foi enviado. Por favor, confirme seu e-mail e faça login.");
         setIsRegistering(false); // Volta para a tela de login
         setEmail('');
         setPassword('');
