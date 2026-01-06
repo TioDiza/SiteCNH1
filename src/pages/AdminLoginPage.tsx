@@ -36,37 +36,49 @@ const AdminLoginPage: React.FC = () => {
     setIsLoading(true);
     setError(null);
 
-    const { data, error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          name: name,
+    try {
+      const { data, error: signUpError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name: name,
+          },
         },
-      },
-    });
+      });
 
-    if (signUpError) {
-      console.error("Admin Register Error:", signUpError);
-      setError(signUpError.message);
-    } else if (data.user) {
-      const { error: updateProfileError } = await supabase
-        .from('profiles')
-        .update({ role: 'admin' })
-        .eq('id', data.user.id);
+      if (signUpError) {
+        console.error("Admin Register Error:", signUpError);
+        setError(signUpError.message);
+        return; // Sai da função se houver erro no signUp
+      }
 
-      if (updateProfileError) {
-        console.error("Error updating admin profile role:", updateProfileError);
-        setError("Erro ao definir a role de administrador. O usuário foi criado, mas a role pode não ter sido atualizada. Por favor, verifique manualmente no banco de dados.");
-      } else {
+      if (data.user) {
+        // A função handle_new_user() no Supabase já cria um perfil com role 'user'.
+        // Precisamos atualizar essa role para 'admin'.
+        const { error: updateProfileError } = await supabase
+          .from('profiles')
+          .update({ role: 'admin' })
+          .eq('id', data.user.id);
+
+        if (updateProfileError) {
+          console.error("Error updating admin profile role:", updateProfileError);
+          setError("Erro ao definir a role de administrador. O usuário foi criado, mas a role pode não ter sido atualizada. Por favor, verifique manualmente no banco de dados.");
+          return; // Sai da função se houver erro no update
+        }
+
         alert("Administrador cadastrado com sucesso! Você pode fazer login agora.");
         setIsRegistering(false); // Volta para a tela de login
         setEmail('');
         setPassword('');
         setName('');
       }
+    } catch (err: any) {
+      console.error("Unexpected error during registration:", err);
+      setError(err.message || "Ocorreu um erro inesperado durante o cadastro.");
+    } finally {
+      setIsLoading(false); // Sempre resetar isLoading
     }
-    setIsLoading(false); // Resetar isLoading mesmo em caso de erro
   };
 
   return (
