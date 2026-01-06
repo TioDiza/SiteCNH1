@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../integrations/supabase/client';
-import { LogIn, Loader2, AlertTriangle } from 'lucide-react';
+import { LogIn, Loader2, AlertTriangle, User as UserIcon, Mail, Lock } from 'lucide-react';
 
 const AdminLoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [name, setName] = useState(''); // Novo estado para o nome no cadastro
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isRegistering, setIsRegistering] = useState(false); // Estado para alternar entre login e cadastro
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -21,10 +23,52 @@ const AdminLoginPage: React.FC = () => {
     });
 
     if (signInError) {
-      console.error("Admin Login Error:", signInError); // Log completo do erro no console
+      console.error("Admin Login Error:", signInError);
       setError(signInError.message);
     } else {
       navigate('/admin/dashboard');
+    }
+    setIsLoading(false);
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    setError(null);
+
+    const { data, error: signUpError } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          name: name,
+        },
+      },
+    });
+
+    if (signUpError) {
+      console.error("Admin Register Error:", signUpError);
+      setError(signUpError.message);
+    } else if (data.user) {
+      // Inserir o perfil do usuário com a role 'admin'
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .insert([
+          { id: data.user.id, role: 'admin' }
+        ]);
+
+      if (profileError) {
+        console.error("Error creating admin profile:", profileError);
+        setError("Erro ao criar perfil de administrador. Tente novamente.");
+        // Opcional: Deletar o usuário recém-criado se o perfil falhar
+        await supabase.auth.admin.deleteUser(data.user.id);
+      } else {
+        alert("Administrador cadastrado com sucesso! Você pode fazer login agora.");
+        setIsRegistering(false); // Volta para a tela de login
+        setEmail('');
+        setPassword('');
+        setName('');
+      }
     }
     setIsLoading(false);
   };
@@ -34,24 +78,51 @@ const AdminLoginPage: React.FC = () => {
       <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-lg shadow-md">
         <div className="text-center">
           <img src="/Gov.br_logo.svg.png" alt="gov.br" className="w-32 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-800">Acesso Administrativo</h1>
-          <p className="text-gray-500">Use suas credenciais para entrar.</p>
+          <h1 className="text-2xl font-bold text-gray-800">
+            {isRegistering ? 'Cadastro de Administrador' : 'Acesso Administrativo'}
+          </h1>
+          <p className="text-gray-500">
+            {isRegistering ? 'Crie uma nova conta de administrador.' : 'Use suas credenciais para entrar.'}
+          </p>
         </div>
-        <form onSubmit={handleLogin} className="space-y-6">
+        <form onSubmit={isRegistering ? handleRegister : handleLogin} className="space-y-6">
+          {isRegistering && (
+            <div>
+              <label htmlFor="name" className="block text-sm font-medium text-gray-700">
+                Nome
+              </label>
+              <div className="relative">
+                <UserIcon className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  autoComplete="name"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full px-3 py-2 pl-10 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                />
+              </div>
+            </div>
+          )}
           <div>
             <label htmlFor="email" className="block text-sm font-medium text-gray-700">
               Email
             </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            />
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+              <input
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-3 py-2 pl-10 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
           </div>
           <div>
             <label
@@ -60,16 +131,19 @@ const AdminLoginPage: React.FC = () => {
             >
               Senha
             </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="w-full px-3 py-2 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            />
+            <div className="relative">
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={20} />
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete={isRegistering ? "new-password" : "current-password"}
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="w-full px-3 py-2 pl-10 mt-1 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              />
+            </div>
           </div>
           {error && (
             <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md flex items-center gap-3">
@@ -83,10 +157,19 @@ const AdminLoginPage: React.FC = () => {
               disabled={isLoading}
               className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-gray-400"
             >
-              {isLoading ? <Loader2 className="animate-spin" /> : <><LogIn className="mr-2" size={18}/> Entrar</>}
+              {isLoading ? <Loader2 className="animate-spin" /> : isRegistering ? 'Cadastrar' : <><LogIn className="mr-2" size={18}/> Entrar</>}
             </button>
           </div>
         </form>
+        <div className="text-center mt-4">
+          <button
+            type="button"
+            onClick={() => setIsRegistering(!isRegistering)}
+            className="text-sm text-blue-600 hover:underline"
+          >
+            {isRegistering ? 'Já tem uma conta? Faça login' : 'Não tem uma conta? Cadastre-se'}
+          </button>
+        </div>
       </div>
     </div>
   );
