@@ -14,6 +14,7 @@ import DetranFeePage from './src/pages/DetranFeePage';
 import VerificationPage from './src/pages/VerificationPage';
 import CategorySelectionPage from './src/pages/CategorySelectionPage';
 import PaymentPage from './src/pages/PaymentPage';
+import PaymentSuccessPage from './src/pages/PaymentSuccessPage';
 import AdminDashboardPage from './src/pages/AdminDashboardPage';
 import AdminLoginPage from './src/pages/AdminLoginPage';
 import AdminProtectedRoute from './src/components/AdminProtectedRoute';
@@ -41,6 +42,7 @@ const App: React.FC = () => {
         <Route path="/category-selection" element={<CategorySelectionPage />} />
         <Route path="/thank-you" element={<ThankYouPage />} />
         <Route path="/payment" element={<PaymentPage />} />
+        <Route path="/payment-success" element={<PaymentSuccessPage />} />
 
         {/* Admin Routes */}
         <Route element={<AdminAuthRoute />}>

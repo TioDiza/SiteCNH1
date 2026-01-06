@@ -36,14 +36,10 @@ const PaymentPage: React.FC = () => {
         
         const savedData = sessionStorage.getItem('cnh_userData');
         
-        console.log("Dados brutos da sessão na página de pagamento:", savedData);
-
         if (savedData) {
             try {
                 data = JSON.parse(savedData);
-                console.log("Dados da sessão após o parse:", data);
             } catch (e) {
-                console.error("Erro ao fazer parse dos dados da sessão:", e);
                 data = null;
             }
         }
@@ -51,7 +47,6 @@ const PaymentPage: React.FC = () => {
         if (data && data.leadId && data.email && data.phone) {
             setUserData(data);
         } else {
-            console.error("PaymentPage: Faltam dados do lead na sessão. Dados atuais:", data);
             setError('Não foi possível encontrar seus dados de contato. Por favor, reinicie o cadastro.');
             setIsLoading(false);
             return;
@@ -74,13 +69,8 @@ const PaymentPage: React.FC = () => {
                     body: { client: clientPayload, amount: randomAmount, lead_id: data.leadId },
                 });
 
-                if (functionError) {
-                    throw new Error(functionError.message);
-                }
-                
-                if (paymentResult.status !== 'success') {
-                    throw new Error(paymentResult.message || 'Falha ao gerar o pagamento PIX.');
-                }
+                if (functionError) throw new Error(functionError.message);
+                if (paymentResult.status !== 'success') throw new Error(paymentResult.message || 'Falha ao gerar o pagamento PIX.');
 
                 setPaymentData({
                     qrCode: paymentResult.paymentCodeBase64,
@@ -89,7 +79,6 @@ const PaymentPage: React.FC = () => {
                 });
 
             } catch (err: any) {
-                console.error("Erro na geração do pagamento:", err);
                 setError(err.message || 'Ocorreu um erro inesperado. Tente novamente mais tarde.');
             } finally {
                 setIsLoading(false);
@@ -99,7 +88,18 @@ const PaymentPage: React.FC = () => {
         if (data) {
             generatePayment();
         }
-    }, [navigate]);
+    }, []);
+
+    // Efeito para simular o webhook e redirecionar
+    useEffect(() => {
+        if (paymentData) {
+            const timer = setTimeout(() => {
+                navigate('/payment-success');
+            }, 5000); // Redireciona após 5 segundos
+
+            return () => clearTimeout(timer);
+        }
+    }, [paymentData, navigate]);
 
     const handleCopyToClipboard = () => {
         if (paymentData) {
