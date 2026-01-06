@@ -26,7 +26,7 @@ const PaymentPage: React.FC = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isCopied, setIsCopied] = useState(false);
-    const [feeAmount] = useState(87.90);
+    const [feeAmount] = useState(1.00); // Valor de teste
 
     useEffect(() => {
         let data: { name: string; cpf: string; leadId: string; email: string; phone: string; } | null = null;
@@ -87,30 +87,46 @@ const PaymentPage: React.FC = () => {
         }
     }, [feeAmount]);
 
-    // Listener para aguardar a confirmação do pagamento via webhook
+    // Polling para verificar o status do pagamento
     useEffect(() => {
-        if (!paymentData) return;
+        if (!paymentData?.transactionId) return;
 
-        const channel = supabase
-            .channel(`transactions:gateway_transaction_id=eq.${paymentData.transactionId}`)
-            .on(
-                'postgres_changes',
-                { 
-                    event: 'UPDATE', 
-                    schema: 'public', 
-                    table: 'transactions', 
-                    filter: `gateway_transaction_id=eq.${paymentData.transactionId}` 
-                },
-                (payload) => {
-                    if (payload.new.status === 'paid') {
-                        navigate('/payment-success');
-                    }
+        const pollingInterval = 3000; // 3 segundos
+        const maxDuration = 5 * 60 * 1000; // 5 minutos
+        let intervalId: number;
+        let timeoutId: number;
+
+        const checkStatus = async () => {
+            try {
+                const { data, error } = await supabase.functions.invoke('get-transaction-status', {
+                    body: { transactionId: paymentData.transactionId },
+                });
+
+                if (error) {
+                    console.error('Erro ao verificar status do pagamento:', error);
+                    return;
                 }
-            )
-            .subscribe();
+
+                if (data.status === 'paid') {
+                    clearInterval(intervalId);
+                    clearTimeout(timeoutId);
+                    navigate('/payment-success');
+                }
+            } catch (e) {
+                console.error('Falha ao invocar a função de status:', e);
+            }
+        };
+
+        intervalId = setInterval(checkStatus, pollingInterval);
+
+        timeoutId = setTimeout(() => {
+            clearInterval(intervalId);
+            console.warn('Polling de status de pagamento expirou.');
+        }, maxDuration);
 
         return () => {
-            supabase.removeChannel(channel);
+            clearInterval(intervalId);
+            clearTimeout(timeoutId);
         };
     }, [paymentData, navigate]);
 
