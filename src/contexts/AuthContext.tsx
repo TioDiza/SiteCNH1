@@ -24,53 +24,43 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: authListener } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    const { data: authListener } = supabase.auth.onAuthStateChange(async (_event, currentSession) => {
+      // Sempre que o estado de autenticação mudar, entramos em modo de carregamento
+      setLoading(true);
+      setSession(currentSession);
+      setUser(currentSession?.user ?? null);
 
-      if (session?.user) {
+      if (currentSession?.user) {
+        // Se houver um usuário, buscamos o perfil dele
         const { data: profileData, error } = await supabase
           .from('profiles')
           .select('role')
-          .eq('id', session.user.id)
+          .eq('id', currentSession.user.id)
           .single();
 
         if (error) {
-          console.error('Error fetching profile:', error);
-          setProfile(null); // Definir perfil como null em caso de erro
+          console.error('Error fetching profile on auth change:', error);
+          setProfile(null);
         } else {
           setProfile(profileData);
         }
       } else {
-        setProfile(null); // Limpar perfil se não houver usuário
+        // Se não houver usuário, limpamos o perfil
+        setProfile(null);
       }
-      setLoading(false); // Sempre definir loading como false após o processamento
+      // Finalizamos o carregamento após buscar todas as informações
+      setLoading(false);
     });
 
-    // Fetch initial session
-    const getInitialSession = async () => {
-        const { data: { session } } = await supabase.auth.getSession();
-        setSession(session);
-        setUser(session?.user ?? null);
-        if (session?.user) {
-            const { data: profileData, error } = await supabase
-                .from('profiles')
-                .select('role')
-                .eq('id', session.user.id)
-                .single();
-            if (error) {
-                console.error('Error fetching initial profile:', error);
-                setProfile(null);
-            } else {
-                setProfile(profileData);
-            }
-        } else {
-            setProfile(null);
+    // O listener acima é acionado no carregamento inicial da página com o evento 'INITIAL_SESSION',
+    // então não precisamos de uma função separada para buscar a sessão inicial.
+    // Isso simplifica o código e evita problemas de concorrência.
+    // Apenas garantimos que, se não houver sessão alguma, o carregamento pare.
+    supabase.auth.getSession().then(({ data: { session } }) => {
+        if (!session) {
+            setLoading(false);
         }
-        setLoading(false);
-    };
-
-    getInitialSession();
+    });
 
     return () => {
       authListener.subscription.unsubscribe();
