@@ -1,46 +1,13 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
+import { getPixUpToken } from "../_shared/pixup.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// --- PixUp API Configuration ---
-const PIXUP_AUTH_URL = 'https://api.pixupbr.com/v2/oauth/token';
 const PIXUP_QRCODE_URL = 'https://api.pixupbr.com/v2/pix/qrcode';
-const PIXUP_CLIENT_ID = Deno.env.get('PIXUP_CLIENT_ID');
-const PIXUP_CLIENT_SECRET = Deno.env.get('PIXUP_CLIENT_SECRET');
-
-/**
- * Obtém um token de acesso da API da PixUp.
- */
-async function getPixUpToken(): Promise<string> {
-  if (!PIXUP_CLIENT_ID || !PIXUP_CLIENT_SECRET) {
-    console.error('[create-payment] As credenciais da PixUp não estão configuradas.');
-    throw new Error('Configuração do provedor de pagamento incompleta.');
-  }
-  const credentials = `${PIXUP_CLIENT_ID}:${PIXUP_CLIENT_SECRET}`;
-  const base64Credentials = btoa(credentials);
-
-  const response = await fetch(PIXUP_AUTH_URL, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Basic ${base64Credentials}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ grant_type: 'client_credentials' })
-  });
-
-  if (!response.ok) {
-    const errorBody = await response.text();
-    console.error('[create-payment] Falha ao obter token da PixUp:', response.status, errorBody);
-    throw new Error('Falha na autenticação com o provedor de pagamento.');
-  }
-
-  const data = await response.json();
-  return data.access_token;
-}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -69,10 +36,8 @@ serve(async (req) => {
         });
     }
 
-    // 1. Obter o token de acesso da PixUp
     const accessToken = await getPixUpToken();
 
-    // 2. Criar a cobrança PIX
     const webhookUrl = 'https://lubhskftgevcgfkzxozx.supabase.co/functions/v1/payment-webhook';
     const externalId = lead_id || starlink_customer_id;
 
@@ -107,12 +72,11 @@ serve(async (req) => {
         });
     }
 
-    // 3. Salvar a transação no banco de dados
     const transactionPayload = {
         gateway_transaction_id: qrData.transactionId,
         amount: amount,
         status: 'pending',
-        provider: 'pixup', // Novo provedor
+        provider: 'pixup',
         raw_gateway_response: qrData,
         lead_id: lead_id || null,
         starlink_customer_id: starlink_customer_id || null,
@@ -130,7 +94,6 @@ serve(async (req) => {
       });
     }
 
-    // 4. Retornar os dados para o frontend
     return new Response(JSON.stringify({
       status: 'success',
       pixCode: qrData.qrcode,

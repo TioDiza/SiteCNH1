@@ -1,50 +1,49 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
+import { getPixUpToken } from "../_shared/pixup.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-const ROYAL_BANKING_CASHOUT_API_URL = 'https://api.royalbanking.com.br/c1/cashout/';
-// IMPORTANTE: Defina isso no Painel Supabase: Projeto -> Funções Edge -> create-cashout -> Gerenciar Segredos
-const ROYAL_BANKING_API_KEY = Deno.env.get('ROYAL_BANKING_API_KEY'); 
+const PIXUP_PAYMENT_URL = 'https://api.pixupbr.com/v2/pix/payment';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
-  if (!ROYAL_BANKING_API_KEY) {
-    console.error('O segredo ROYAL_BANKING_API_KEY não está definido.');
-    return new Response(JSON.stringify({ error: 'A chave da API para o gateway de pagamento não está configurada.' }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      status: 500,
-    })
-  }
-
   try {
-    const { amount, keypix, pixType, name, cpf, postbackUrl } = await req.json();
+    const { amount, description, external_id, creditParty } = await req.json();
 
-    if (!amount || !keypix || !pixType || !name || !cpf || !postbackUrl) {
-      return new Response(JSON.stringify({ error: 'Faltam informações obrigatórias para o saque.' }), {
+    if (!amount || !creditParty || !creditParty.key || !creditParty.taxId || !creditParty.name) {
+      console.error('[create-cashout] Faltam informações obrigatórias.');
+      return new Response(JSON.stringify({ error: 'Faltam informações obrigatórias para o pagamento (amount, creditParty.{key, taxId, name}).' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 422, // Conforme a documentação
+        status: 400,
       });
     }
 
+    const accessToken = await getPixUpToken();
+
     const payload = {
-      'api-key': ROYAL_BANKING_API_KEY,
       amount,
-      keypix,
-      pixType,
-      name,
-      cpf,
-      postbackUrl
+      description: description || "Pagamento via CNH do Brasil",
+      external_id: external_id || crypto.randomUUID(),
+      creditParty: {
+        key: creditParty.key,
+        taxId: creditParty.taxId,
+        name: creditParty.name,
+        ...(creditParty.bank && { bank: creditParty.bank }),
+        ...(creditParty.branch && { branch: creditParty.branch }),
+        ...(creditParty.account && { account: creditParty.account }),
+      }
     };
 
-    const response = await fetch(ROYAL_BANKING_CASHOUT_API_URL, {
+    const response = await fetch(PIXUP_PAYMENT_URL, {
       method: 'POST',
       headers: {
+        'Authorization': `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(payload),
@@ -53,19 +52,21 @@ serve(async (req) => {
     const data = await response.json();
 
     if (!response.ok) {
+        console.error('[create-cashout] Erro da API PixUp:', data);
         return new Response(JSON.stringify(data), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: response.status,
         });
     }
 
+    console.log('[create-cashout] Pagamento realizado com sucesso:', data);
     return new Response(JSON.stringify(data), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
 
   } catch (error) {
-    console.error('Erro na função create-cashout:', error);
+    console.error('[create-cashout] Erro inesperado:', error);
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
