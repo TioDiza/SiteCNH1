@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Loader2, ClipboardCopy, CheckCircle } from 'lucide-react';
 import { supabase } from '../integrations/supabase/client';
-import { QRCode } from 'qrcode.react';
+import QRCode from 'qrcode.react';
 
 const StarlinkPaymentPage: React.FC = () => {
     const navigate = useNavigate();

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { User, Loader2, ClipboardCopy, CheckCircle, AlertTriangle, Smartphone, Info } from 'lucide-react';
 import { supabase } from '../integrations/supabase/client';
-import { QRCode } from 'qrcode.react';
+import QRCode from 'qrcode.react';
 
 const PaymentHeader: React.FC<{ userName?: string }> = ({ userName }) => (
     <header className="bg-white border-b border-gray-200">
