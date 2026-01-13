@@ -64,28 +64,25 @@ const LoginPage: React.FC = () => {
     }
     setIsLoading(true);
 
-    const apiKey = 'b77f7a8b39207b2199969684bdad61d2f93113323a6c4d796e9bd8e256c55df6';
-    const url = `https://api.cpfhub.io/cpf/${cpf.replace(/\D/g, '')}`;
-
     try {
-      const response = await fetch(url, {
-        headers: {
-          'x-api-key': apiKey
-        }
+      const { data, error: functionError } = await supabase.functions.invoke('validate-cpf', {
+        body: { cpf: cpf.replace(/\D/g, '') },
       });
 
-      const data = await response.json();
+      if (functionError) {
+        const errorMessage = functionError.context?.error?.message || functionError.message;
+        throw new Error(errorMessage);
+      }
 
-      if (response.ok && data.success) {
-        // Armazenar dados do usuário na sessão para uso posterior
+      if (data.success) {
         sessionStorage.setItem('cnh_userData', JSON.stringify({ ...data.data, cpf: cpf }));
         navigate('/confirmation');
       } else {
         setError(`Erro ao consultar o CPF: ${data.message || 'CPF inválido ou não encontrado.'}`);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Erro na requisição:", error);
-      setError("Ocorreu um erro ao tentar validar o CPF. Tente novamente mais tarde.");
+      setError(error.message || "Ocorreu um erro ao tentar validar o CPF. Tente novamente mais tarde.");
     } finally {
       setIsLoading(false);
     }
