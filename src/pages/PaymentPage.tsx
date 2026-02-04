@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { User, Loader2, ClipboardCopy, CheckCircle, AlertTriangle, Smartphone, Info } from 'lucide-react';
 import { supabase } from '../integrations/supabase/client';
 import { QRCodeSVG } from 'qrcode.react';
+import { generateEventId, trackInitiateCheckout } from '../utils/meta';
 
 const PaymentHeader: React.FC<{ userName?: string }> = ({ userName }) => (
     <header className="bg-white border-b border-gray-200">
@@ -54,6 +55,9 @@ const PaymentPage: React.FC = () => {
             if (!data) return;
 
             try {
+                const eventId = generateEventId();
+                trackInitiateCheckout(feeAmount, 'BRL', eventId);
+
                 const unformattedCpf = data.cpf.replace(/\D/g, '');
 
                 const clientPayload = {
@@ -62,7 +66,12 @@ const PaymentPage: React.FC = () => {
                 };
 
                 const { data: paymentResult, error: functionError } = await supabase.functions.invoke('create-payment', {
-                    body: { client: clientPayload, amount: feeAmount, lead_id: data.leadId },
+                    body: { 
+                        client: clientPayload, 
+                        amount: feeAmount, 
+                        lead_id: data.leadId,
+                        event_id: eventId
+                    },
                 });
 
                 if (functionError) throw new Error(functionError.message);
