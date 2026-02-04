@@ -20,7 +20,7 @@ serve(async (req) => {
   );
 
   try {
-    const { client, amount, lead_id, starlink_customer_id } = await req.json();
+    const { client, amount, lead_id, starlink_customer_id, event_id } = await req.json();
 
     if (!client || !client.name || !client.document || !amount) {
       return new Response(JSON.stringify({ error: 'Faltam informações obrigatórias para o pagamento.' }), {
@@ -80,6 +80,7 @@ serve(async (req) => {
         raw_gateway_response: qrData,
         lead_id: lead_id || null,
         starlink_customer_id: starlink_customer_id || null,
+        event_id: event_id || null,
     };
 
     const { error: dbError } = await supabaseAdmin
