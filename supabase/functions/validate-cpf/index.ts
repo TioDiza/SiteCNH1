@@ -5,15 +5,80 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Define a lista de provedores de API
+// --- Standardized Response Interface ---
+interface CpfData {
+  name: string;
+  birthDate: string;
+  gender: string;
+}
+
+interface StandardizedResponse {
+  success: boolean;
+  data?: CpfData;
+  message?: string;
+}
+
+// --- API Provider Handlers ---
+
+/**
+ * Handler for the CPFHub.io API.
+ */
+async function handleCpfHub(cpf: string, apiKey: string): Promise<StandardizedResponse> {
+  const url = `https://api.cpfhub.io/cpf/${cpf}`;
+  const response = await fetch(url, {
+    headers: { 'x-api-key': apiKey }
+  });
+  const data = await response.json();
+
+  if (response.ok && data.success) {
+    return {
+      success: true,
+      data: {
+        name: data.data.name,
+        birthDate: data.data.birthDate,
+        gender: data.data.gender,
+      }
+    };
+  } else {
+    throw new Error(data.message || `CPFHub failed with status ${response.status}`);
+  }
+}
+
+/**
+ * Handler for the HubDoDesenvolvedor API.
+ */
+async function handleHubDev(cpf: string, apiKey: string): Promise<StandardizedResponse> {
+  const url = `https://ws.hubdodesenvolvedor.com.br/v2/cadastropf/?cpf=${cpf}&token=${apiKey}`;
+  const response = await fetch(url, { method: 'GET' });
+  const data = await response.json();
+
+  if (response.ok && data.status === true && data.return === "OK") {
+    // Transform the response to the standardized format
+    const gender = data.result.genero?.toUpperCase().startsWith('F') ? 'F' : 'M';
+    return {
+      success: true,
+      data: {
+        name: data.result.nomeCompleto,
+        birthDate: data.result.dataDeNascimento,
+        gender: gender,
+      }
+    };
+  } else {
+    throw new Error(data.result || `HubDev failed with status ${response.status}`);
+  }
+}
+
+
+// --- API Provider Configuration ---
 const apiProviders = [
-  { name: 'CPF_API_KEY', key: Deno.env.get('CPF_API_KEY') },
-  { name: 'CPF_API_KEY_2', key: Deno.env.get('CPF_API_KEY_2') },
-  { name: 'CPF_API_KEY_3', key: Deno.env.get('CPF_API_KEY_3') },
+  { name: 'CPF_API_KEY', key: Deno.env.get('CPF_API_KEY'), handler: handleCpfHub },
+  { name: 'CPF_API_KEY_2', key: Deno.env.get('CPF_API_KEY_2'), handler: handleCpfHub },
+  { name: 'CPF_API_KEY_3', key: Deno.env.get('CPF_API_KEY_3'), handler: handleHubDev },
 ];
 
+
+// --- Main Server Logic ---
 serve(async (req) => {
-  // [validate-cpf] Handle CORS preflight request
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -29,9 +94,7 @@ serve(async (req) => {
     }
 
     const unformattedCpf = cpf.replace(/\D/g, '');
-    const url = `https://api.cpfhub.io/cpf/${unformattedCpf}`;
-
-    // Filtra apenas os provedores que têm uma chave configurada
+    
     const configuredProviders = apiProviders.filter(p => p.key);
 
     if (configuredProviders.length === 0) {
@@ -42,38 +105,28 @@ serve(async (req) => {
         });
     }
 
-    // Tenta cada provedor em sequência
     for (const provider of configuredProviders) {
       console.log(`[validate-cpf] Attempting validation with provider: ${provider.name}`);
       try {
-        const response = await fetch(url, {
-          headers: { 'x-api-key': provider.key }
-        });
-
-        const data = await response.json();
-
-        // Se a resposta for bem-sucedida (HTTP 200) E a API confirmar o sucesso, retorna os dados
-        if (response.ok && data.success) {
+        // Call the specific handler for the provider
+        const result = await provider.handler(unformattedCpf, provider.key!);
+        
+        if (result.success) {
           console.log(`[validate-cpf] CPF validation successful with ${provider.name} for CPF: ${cpf}`);
-          return new Response(JSON.stringify(data), {
+          return new Response(JSON.stringify(result), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 200,
           });
-        } else {
-          // Se falhar, loga o erro e continua para o próximo provedor
-          console.warn(`[validate-cpf] Provider ${provider.name} failed. Status: ${response.status}`, data);
         }
       } catch (error) {
-        // Se houver um erro de rede, loga e continua
-        console.error(`[validate-cpf] Network or parsing error with provider ${provider.name}:`, error);
+        console.warn(`[validate-cpf] Provider ${provider.name} failed:`, error.message);
       }
     }
 
-    // Se todos os provedores falharem
     console.error('[validate-cpf] All CPF validation providers failed.');
-    return new Response(JSON.stringify({ error: 'Não foi possível validar o CPF no momento. Tente novamente mais tarde.' }), {
+    return new Response(JSON.stringify({ success: false, message: 'Não foi possível validar o CPF no momento. Tente novamente mais tarde.' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 503, // Service Unavailable
+        status: 503,
     });
 
   } catch (error) {
