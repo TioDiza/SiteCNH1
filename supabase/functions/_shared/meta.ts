@@ -29,8 +29,9 @@ export async function sendMetaPurchaseEvent(
   clientIp: string | null,
   userAgent: string | null
 ) {
+  console.log(`[sendMetaPurchaseEvent] Preparing to send Purchase event with event_id: ${eventId}`);
   if (!META_PIXEL_ID || !META_CAPI_ACCESS_TOKEN) {
-    console.error('[sendMetaPurchaseEvent] Meta Pixel ID ou Access Token não está configurado.');
+    console.error('[sendMetaPurchaseEvent] Meta Pixel ID ou Access Token não está configurado. Aborting.');
     return;
   }
 
@@ -53,6 +54,8 @@ export async function sendMetaPurchaseEvent(
 
   const url = `https://graph.facebook.com/${META_API_VERSION}/${META_PIXEL_ID}/events`;
 
+  console.log('[sendMetaPurchaseEvent] Sending payload to Meta:', JSON.stringify(payload, null, 2));
+
   try {
     const response = await fetch(url, {
       method: 'POST',
@@ -67,9 +70,9 @@ export async function sendMetaPurchaseEvent(
 
     const responseData = await response.json();
     if (!response.ok) {
-      console.error('[sendMetaPurchaseEvent] Erro ao enviar evento para a Meta:', responseData);
+      console.error('[sendMetaPurchaseEvent] Erro ao enviar evento para a Meta. Status:', response.status, 'Response:', responseData);
     } else {
-      console.log('[sendMetaPurchaseEvent] Evento de Purchase enviado com sucesso para a Meta. event_id:', eventId);
+      console.log('[sendMetaPurchaseEvent] Evento de Purchase enviado com sucesso para a Meta. Response:', responseData);
     }
   } catch (error) {
     console.error('[sendMetaPurchaseEvent] Exceção ao enviar evento para a Meta:', error);

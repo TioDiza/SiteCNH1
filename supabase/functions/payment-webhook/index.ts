@@ -70,6 +70,8 @@ const handler = async (req: Request): Promise<Response> => {
       return new Response(JSON.stringify({ status: 'ok' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
   }
 
+  console.log(`[payment-webhook] Processing transaction ${transactionId} with status ${dbStatus}`);
+
   const { data: updatedTransaction, error } = await supabaseAdmin
     .from('transactions')
     .update({ status: dbStatus, raw_gateway_response: payload })
@@ -83,15 +85,17 @@ const handler = async (req: Request): Promise<Response> => {
     console.log(`[payment-webhook] DB Success: Successfully updated transaction ${transactionId} to status ${dbStatus}`);
     
     if (dbStatus === 'paid' && updatedTransaction && !updatedTransaction.meta_event_sent) {
+      console.log(`[payment-webhook] Transaction ${transactionId} is paid and Meta event not sent yet. Preparing to send.`);
       const userData = {
         em: updatedTransaction.leads?.email,
         ph: updatedTransaction.leads?.phone || updatedTransaction.starlink_customers?.phone,
       };
 
       if (updatedTransaction.event_id && (userData.em || userData.ph)) {
-        console.log(`[payment-webhook] Triggering Meta Purchase event for transaction ${transactionId}`);
+        console.log(`[payment-webhook] Triggering Meta Purchase event for transaction ${transactionId} with event_id ${updatedTransaction.event_id}`);
         await sendMetaPurchaseEvent(updatedTransaction.amount, 'BRL', updatedTransaction.event_id, userData, null, null);
         
+        console.log(`[payment-webhook] Marking meta_event_sent as true for transaction ${updatedTransaction.id}`);
         const { error: updateMetaError } = await supabaseAdmin
           .from('transactions')
           .update({ meta_event_sent: true })
@@ -99,9 +103,11 @@ const handler = async (req: Request): Promise<Response> => {
 
         if (updateMetaError) {
           console.error(`[payment-webhook] DB Error: Failed to set meta_event_sent for transaction ${updatedTransaction.id}`, updateMetaError);
+        } else {
+          console.log(`[payment-webhook] DB Success: meta_event_sent marked as true for transaction ${updatedTransaction.id}`);
         }
       } else {
-        console.warn(`[payment-webhook] Could not send Meta event for transaction ${transactionId}. Missing event_id or user data.`);
+        console.warn(`[payment-webhook] Could not send Meta event for transaction ${transactionId}. Missing event_id or user data. Event ID: ${updatedTransaction.event_id}, User Data:`, userData);
       }
     }
   }
