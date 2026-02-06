@@ -33,10 +33,13 @@ const Header: React.FC = () => {
           <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-full">
             <Search size={20} />
           </button>
-          <button className="flex items-center gap-2 bg-[#004381] text-white px-4 py-1.5 rounded-full text-sm font-medium hover:bg-blue-900 transition-colors">
+          <Link 
+            to="/login"
+            className="flex items-center gap-2 bg-[#004381] text-white px-4 py-1.5 rounded-full text-sm font-medium hover:bg-blue-900 transition-colors"
+          >
             <User size={18} />
             <span>Entrar</span>
-          </button>
+          </Link>
           <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-full">
             <Menu size={20} />
           </button>
