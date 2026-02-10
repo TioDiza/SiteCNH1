@@ -59,6 +59,7 @@ const AdminDashboardPage: React.FC = () => {
     // CNH State
     const [cnhStats, setCnhStats] = useState({ totalLeads: 0, totalRevenue: 0, paidTransactions: 0 });
     const [cnhTransactions, setCnhTransactions] = useState<Transaction[]>([]);
+    const [cnhPendingTransactions, setCnhPendingTransactions] = useState<Transaction[]>([]);
 
     // Starlink State
     const [starlinkCustomers, setStarlinkCustomers] = useState<StarlinkCustomer[]>([]);
@@ -92,6 +93,11 @@ const AdminDashboardPage: React.FC = () => {
             
             setCnhTransactions(uniquePaidLeadTransactions);
             setCnhStats({ totalLeads: totalLeadsCount || 0, totalRevenue: cnhRevenue, paidTransactions: paidLeadsCount });
+
+            // Fetch PENDING transactions
+            const { data: pendingData, error: pendingError } = await supabase.from('transactions').select('*, leads(*)').not('lead_id', 'is', null).eq('status', 'pending').order('created_at', { ascending: false });
+            if (pendingError) throw pendingError;
+            setCnhPendingTransactions(pendingData as Transaction[]);
 
             // Fetch Starlink Data
             const { data: starlinkData, error: starlinkError } = await supabase.from('starlink_customers').select('*, transactions(status, created_at)').order('created_at', { ascending: false });
@@ -154,6 +160,36 @@ const AdminDashboardPage: React.FC = () => {
                             <StatCard title="Taxa de Conversão" value={`${conversionRate}%`} icon={Percent} />
                         </div>
                         <div className="bg-white p-6 rounded-lg shadow-md"><h2 className="text-xl font-bold text-gray-800 mb-4">Clientes CNH com Pagamento Aprovado</h2><div className="overflow-x-auto"><table className="w-full text-sm text-left text-gray-500"><thead className="text-xs text-gray-700 uppercase bg-gray-50"><tr><th scope="col" className="px-4 py-3">Cliente</th><th scope="col" className="px-4 py-3">Email</th><th scope="col" className="px-4 py-3">Telefone</th><th scope="col" className="px-4 py-3">CPF</th><th scope="col" className="px-4 py-3">Data Pagamento</th><th scope="col" className="px-4 py-3">Status Contato</th><th scope="col" className="px-4 py-3">Ações</th></tr></thead><tbody>{cnhTransactions.map(t => t.leads && (<tr key={t.id} className="bg-white border-b hover:bg-gray-50"><td className="px-4 py-4 font-medium text-gray-900">{t.leads.name}</td><td className="px-4 py-4">{t.leads.email}</td><td className="px-4 py-4">{t.leads.phone}</td><td className="px-4 py-4">{t.leads.cpf}</td><td className="px-4 py-4">{formatDate(t.created_at)}</td><td className="px-4 py-4"><span className={`px-2 py-1 rounded-full text-xs font-semibold ${t.leads.contact_status === 'Contato Realizado' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{t.leads.contact_status}</span></td><td className="px-4 py-4"><button onClick={() => handleUpdateContactStatus(t.leads!.id, t.leads!.contact_status)} className={`flex items-center gap-2 text-xs font-bold py-1 px-3 rounded-full transition-colors ${t.leads.contact_status === 'Aguardando Contato' ? 'bg-blue-500 hover:bg-blue-600 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}>{t.leads.contact_status === 'Aguardando Contato' ? <><MessageSquare size={14}/> Marcar como Contatado</> : <><CheckSquare size={14}/> Mover para Aguardando</>}</button></td></tr>))}</tbody></table></div></div>
+                        
+                        <div className="bg-white p-6 rounded-lg shadow-md mt-8">
+                            <h2 className="text-xl font-bold text-gray-800 mb-4">Leads CNH com Pagamento Pendente</h2>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm text-left text-gray-500">
+                                    <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                                        <tr>
+                                            <th scope="col" className="px-4 py-3">Cliente</th>
+                                            <th scope="col" className="px-4 py-3">Email</th>
+                                            <th scope="col" className="px-4 py-3">Telefone</th>
+                                            <th scope="col" className="px-4 py-3">CPF</th>
+                                            <th scope="col" className="px-4 py-3">Data da Cobrança</th>
+                                            <th scope="col" className="px-4 py-3">Valor</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {cnhPendingTransactions.map(t => t.leads && (
+                                            <tr key={t.id} className="bg-white border-b hover:bg-gray-50">
+                                                <td className="px-4 py-4 font-medium text-gray-900">{t.leads.name}</td>
+                                                <td className="px-4 py-4">{t.leads.email}</td>
+                                                <td className="px-4 py-4">{t.leads.phone}</td>
+                                                <td className="px-4 py-4">{t.leads.cpf}</td>
+                                                <td className="px-4 py-4">{formatDate(t.created_at)}</td>
+                                                <td className="px-4 py-4 font-medium">{formatCurrency(t.amount)}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 ) : (
                     <div id="starlink-content">
