@@ -123,7 +123,12 @@ const AdminDashboardPage: React.FC = () => {
             const { count: totalLeadsCount, error: countError } = await supabase.from('leads').select('*', { count: 'exact', head: true });
             if (countError) throw countError;
 
-            const { data: cnhData, error: cnhError } = await supabase.from('transactions').select('*, leads(*)').not('lead_id', 'is', null).eq('status', 'paid').order('created_at', { ascending: false });
+            const { data: cnhData, error: cnhError } = await supabase
+                .from('transactions')
+                .select('id, amount, status, provider, created_at, leads(id, name, email, phone, cpf, contact_status)')
+                .not('lead_id', 'is', null)
+                .eq('status', 'paid')
+                .order('created_at', { ascending: false });
             if (cnhError) throw cnhError;
             
             const typedCnhTransactions = cnhData as Transaction[];
@@ -143,7 +148,12 @@ const AdminDashboardPage: React.FC = () => {
             setCnhStats({ totalLeads: totalLeadsCount || 0, totalRevenue: cnhRevenue, paidTransactions: paidLeadsCount });
 
             // Fetch PENDING transactions
-            const { data: pendingData, error: pendingError } = await supabase.from('transactions').select('*, leads(*)').not('lead_id', 'is', null).eq('status', 'pending').order('created_at', { ascending: false });
+            const { data: pendingData, error: pendingError } = await supabase
+                .from('transactions')
+                .select('id, amount, status, provider, created_at, leads(id, name, email, phone, cpf, contact_status)')
+                .not('lead_id', 'is', null)
+                .eq('status', 'pending')
+                .order('created_at', { ascending: false });
             if (pendingError) throw pendingError;
             setCnhPendingTransactions(pendingData as Transaction[]);
 
