@@ -29,6 +29,7 @@ interface StarlinkCustomer {
     name: string;
     cpf: string;
     phone: string;
+    contact_status: string;
     address: {
         cep: string;
         street: string;
@@ -166,7 +167,6 @@ const AdminDashboardPage: React.FC = () => {
     const handleUpdateContactStatus = async (leadId: string, currentStatus: string) => {
         const newStatus = currentStatus === 'Aguardando Contato' ? 'Contato Realizado' : 'Aguardando Contato';
         
-        // Optimistic UI update for both lists
         setCnhTransactions(prev => prev.map(t => t.leads?.id === leadId ? { ...t, leads: { ...t.leads!, contact_status: newStatus } } : t));
         setCnhPendingTransactions(prev => prev.map(t => t.leads?.id === leadId ? { ...t, leads: { ...t.leads!, contact_status: newStatus } } : t));
 
@@ -174,7 +174,6 @@ const AdminDashboardPage: React.FC = () => {
         
         if (updateError) {
             setError("Falha ao atualizar o status.");
-            // Revert UI update on failure
             setCnhTransactions(prev => prev.map(t => t.leads?.id === leadId ? { ...t, leads: { ...t.leads!, contact_status: currentStatus } } : t));
             setCnhPendingTransactions(prev => prev.map(t => t.leads?.id === leadId ? { ...t, leads: { ...t.leads!, contact_status: currentStatus } } : t));
         }
@@ -225,6 +224,53 @@ const AdminDashboardPage: React.FC = () => {
         } else {
             setCnhTransactions(prev => prev.filter(t => t.leads?.id !== leadId));
             setCnhPendingTransactions(prev => prev.filter(t => t.leads?.id !== leadId));
+        }
+    };
+
+    const handleUpdateStarlinkContactStatus = async (customerId: string, currentStatus: string) => {
+        const newStatus = currentStatus === 'Aguardando Contato' ? 'Contato Realizado' : 'Aguardando Contato';
+        setStarlinkCustomers(prev => prev.map(c => c.id === customerId ? { ...c, contact_status: newStatus } : c));
+        const { error: updateError } = await supabase.from('starlink_customers').update({ contact_status: newStatus }).eq('id', customerId);
+        if (updateError) {
+            setError("Falha ao atualizar o status do cliente Starlink.");
+            setStarlinkCustomers(prev => prev.map(c => c.id === customerId ? { ...c, contact_status: currentStatus } : c));
+        }
+    };
+
+    const handleBulkUpdateStarlinkContactStatus = async (newStatus: 'Contato Realizado' | 'Aguardando Contato') => {
+        const customersToUpdate = starlinkCustomers.map(c => c.id);
+        if (customersToUpdate.length === 0) {
+            alert("Não há clientes para atualizar.");
+            return;
+        }
+        if (!window.confirm(`Tem certeza que deseja marcar ${customersToUpdate.length} clientes como "${newStatus}"?`)) {
+            return;
+        }
+        setLoading(true);
+        const { error: functionError } = await supabase.functions.invoke('bulk-update-starlink-customers-status', {
+            body: { customerIds: customersToUpdate, status: newStatus },
+        });
+        setLoading(false);
+        if (functionError) {
+            setError("Falha ao atualizar os status em massa.");
+        } else {
+            setStarlinkCustomers(prev => prev.map(c => ({ ...c, contact_status: newStatus })));
+        }
+    };
+
+    const handleDeleteStarlinkCustomer = async (customerId: string, customerName: string) => {
+        if (!window.confirm(`Tem certeza que deseja deletar o cliente "${customerName}"? Esta ação não pode ser desfeita.`)) {
+            return;
+        }
+        setLoading(true);
+        const { error: functionError } = await supabase.functions.invoke('delete-starlink-customer', {
+            body: { customerId },
+        });
+        setLoading(false);
+        if (functionError) {
+            setError("Falha ao deletar o cliente.");
+        } else {
+            setStarlinkCustomers(prev => prev.filter(c => c.id !== customerId));
         }
     };
 
@@ -321,7 +367,52 @@ const AdminDashboardPage: React.FC = () => {
                     </div>
                 ) : (
                     <div id="starlink-content">
-                        <div className="bg-white p-6 rounded-lg shadow-md"><h2 className="text-xl font-bold text-gray-800 mb-4">Clientes Starlink</h2><div className="overflow-x-auto"><table className="w-full text-sm text-left text-gray-500"><thead className="text-xs text-gray-700 uppercase bg-gray-50"><tr><th scope="col" className="px-4 py-3">Cliente</th><th scope="col" className="px-4 py-3">Contato</th><th scope="col" className="px-4 py-3">Endereço</th><th scope="col" className="px-4 py-3">Data Cadastro</th><th scope="col" className="px-4 py-3">Status Pagamento</th></tr></thead><tbody>{starlinkCustomers.map(c => (<tr key={c.id} className="bg-white border-b hover:bg-gray-50"><td className="px-4 py-4 font-medium text-gray-900">{c.name}<br/><span className="font-normal text-gray-500">{c.cpf}</span></td><td className="px-4 py-4">{c.phone}</td><td className="px-4 py-4">{c.address ? `${c.address.street}, ${c.address.number} - ${c.address.neighborhood}, ${c.address.city} - ${c.address.state}, ${c.address.cep}` : 'Endereço não informado'}</td><td className="px-4 py-4">{formatDate(c.created_at)}</td><td className="px-4 py-4"><span className={`px-2 py-1 rounded-full text-xs font-semibold ${c.transactions[0]?.status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{c.transactions[0]?.status === 'paid' ? 'Pago' : 'Pendente'}</span></td></tr>))}</tbody></table></div></div>
+                        <div className="bg-white p-6 rounded-lg shadow-md">
+                            <div className="flex flex-wrap justify-between items-center gap-4 mb-4">
+                                <h2 className="text-xl font-bold text-gray-800">Clientes Starlink</h2>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <button onClick={() => handleBulkUpdateStarlinkContactStatus('Contato Realizado')} className="flex items-center gap-2 text-xs font-bold py-2 px-3 rounded-md transition-colors bg-blue-500 hover:bg-blue-600 text-white"><CheckSquare size={14}/> Marcar Todos como Contatado</button>
+                                    <button onClick={() => handleBulkUpdateStarlinkContactStatus('Aguardando Contato')} className="flex items-center gap-2 text-xs font-bold py-2 px-3 rounded-md transition-colors bg-gray-200 hover:bg-gray-300 text-gray-700"><MessageSquare size={14}/> Marcar Todos como Aguardando</button>
+                                </div>
+                            </div>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm text-left text-gray-500">
+                                    <thead className="text-xs text-gray-700 uppercase bg-gray-50">
+                                        <tr>
+                                            <th scope="col" className="px-4 py-3">Cliente</th>
+                                            <th scope="col" className="px-4 py-3">Contato</th>
+                                            <th scope="col" className="px-4 py-3">Endereço</th>
+                                            <th scope="col" className="px-4 py-3">Data Cadastro</th>
+                                            <th scope="col" className="px-4 py-3">Status Pagamento</th>
+                                            <th scope="col" className="px-4 py-3">Status Contato</th>
+                                            <th scope="col" className="px-4 py-3">Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {starlinkCustomers.map(c => (
+                                            <tr key={c.id} className="bg-white border-b hover:bg-gray-50">
+                                                <td className="px-4 py-4 font-medium text-gray-900">{c.name}<br/><span className="font-normal text-gray-500">{formatCpf(c.cpf)}</span></td>
+                                                <td className="px-4 py-4">{c.phone}</td>
+                                                <td className="px-4 py-4 text-xs">{c.address ? `${c.address.street}, ${c.address.number} - ${c.address.neighborhood}, ${c.address.city} - ${c.address.state}, ${c.address.cep}` : 'Não informado'}</td>
+                                                <td className="px-4 py-4">{formatDate(c.created_at)}</td>
+                                                <td className="px-4 py-4"><span className={`px-2 py-1 rounded-full text-xs font-semibold ${c.transactions[0]?.status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{c.transactions[0]?.status === 'paid' ? 'Pago' : 'Pendente'}</span></td>
+                                                <td className="px-4 py-4"><span className={`px-2 py-1 rounded-full text-xs font-semibold ${c.contact_status === 'Contato Realizado' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{c.contact_status || 'Aguardando Contato'}</span></td>
+                                                <td className="px-4 py-4">
+                                                    <div className="flex items-center gap-2">
+                                                        <button onClick={() => handleUpdateStarlinkContactStatus(c.id, c.contact_status || 'Aguardando Contato')} className={`p-2 rounded-full transition-colors ${(c.contact_status || 'Aguardando Contato') === 'Aguardando Contato' ? 'text-blue-500 hover:bg-blue-100' : 'text-gray-500 hover:bg-gray-200'}`}>
+                                                            {(c.contact_status || 'Aguardando Contato') === 'Aguardando Contato' ? <MessageSquare size={16}/> : <CheckSquare size={16}/>}
+                                                        </button>
+                                                        <button onClick={() => handleDeleteStarlinkCustomer(c.id, c.name)} className="p-2 text-red-500 hover:bg-red-100 rounded-full transition-colors">
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
                 )}
             </main>
