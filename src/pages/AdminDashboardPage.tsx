@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../integrations/supabase/client';
-import { LogOut, ShieldCheck, Users, DollarSign, Percent, Loader2, AlertTriangle, MessageSquare, CheckSquare, RefreshCw, Wifi, Car } from 'lucide-react';
+import { LogOut, ShieldCheck, Users, DollarSign, Percent, Loader2, AlertTriangle, MessageSquare, CheckSquare, RefreshCw, Wifi, Car, FileDown } from 'lucide-react';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 // Interfaces
 interface Lead {
@@ -67,6 +69,45 @@ const AdminDashboardPage: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    const formatCurrency = (value: number) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    const formatDate = (dateString: string) => new Date(dateString).toLocaleString('pt-BR');
+
+    const handleExportPDF = (transactions: Transaction[], title: string, filename: string) => {
+        if (!transactions.length || transactions.every(t => !t.leads)) {
+            alert("Não há dados de leads para exportar.");
+            return;
+        }
+
+        const doc = new jsPDF();
+        
+        const tableColumns = ["Cliente", "Email", "Telefone", "CPF", "Data"];
+        const tableRows: (string | null)[][] = [];
+
+        transactions.forEach(t => {
+            if (t.leads) {
+                const transactionData = [
+                    t.leads.name,
+                    t.leads.email,
+                    t.leads.phone,
+                    t.leads.cpf,
+                    formatDate(t.created_at)
+                ];
+                tableRows.push(transactionData);
+            }
+        });
+
+        doc.text(title, 14, 20);
+        autoTable(doc, {
+            head: [tableColumns],
+            body: tableRows,
+            startY: 25,
+            theme: 'grid',
+            headStyles: { fillColor: [22, 160, 133] },
+        });
+
+        doc.save(filename);
+    };
+
     const fetchData = useCallback(async () => {
         setLoading(true);
         setError(null);
@@ -126,8 +167,6 @@ const AdminDashboardPage: React.FC = () => {
         }
     };
 
-    const formatCurrency = (value: number) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
-    const formatDate = (dateString: string) => new Date(dateString).toLocaleString('pt-BR');
     const conversionRate = cnhStats.totalLeads > 0 ? ((cnhStats.paidTransactions / cnhStats.totalLeads) * 100).toFixed(2) : '0.00';
 
     return (
@@ -159,10 +198,19 @@ const AdminDashboardPage: React.FC = () => {
                             <StatCard title="Receita Total" value={formatCurrency(cnhStats.totalRevenue)} icon={DollarSign} />
                             <StatCard title="Taxa de Conversão" value={`${conversionRate}%`} icon={Percent} />
                         </div>
-                        <div className="bg-white p-6 rounded-lg shadow-md"><h2 className="text-xl font-bold text-gray-800 mb-4">Clientes CNH com Pagamento Aprovado</h2><div className="overflow-x-auto"><table className="w-full text-sm text-left text-gray-500"><thead className="text-xs text-gray-700 uppercase bg-gray-50"><tr><th scope="col" className="px-4 py-3">Cliente</th><th scope="col" className="px-4 py-3">Email</th><th scope="col" className="px-4 py-3">Telefone</th><th scope="col" className="px-4 py-3">CPF</th><th scope="col" className="px-4 py-3">Data Pagamento</th><th scope="col" className="px-4 py-3">Status Contato</th><th scope="col" className="px-4 py-3">Ações</th></tr></thead><tbody>{cnhTransactions.map(t => t.leads && (<tr key={t.id} className="bg-white border-b hover:bg-gray-50"><td className="px-4 py-4 font-medium text-gray-900">{t.leads.name}</td><td className="px-4 py-4">{t.leads.email}</td><td className="px-4 py-4">{t.leads.phone}</td><td className="px-4 py-4">{t.leads.cpf}</td><td className="px-4 py-4">{formatDate(t.created_at)}</td><td className="px-4 py-4"><span className={`px-2 py-1 rounded-full text-xs font-semibold ${t.leads.contact_status === 'Contato Realizado' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{t.leads.contact_status}</span></td><td className="px-4 py-4"><button onClick={() => handleUpdateContactStatus(t.leads!.id, t.leads!.contact_status)} className={`flex items-center gap-2 text-xs font-bold py-1 px-3 rounded-full transition-colors ${t.leads.contact_status === 'Aguardando Contato' ? 'bg-blue-500 hover:bg-blue-600 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}>{t.leads.contact_status === 'Aguardando Contato' ? <><MessageSquare size={14}/> Marcar como Contatado</> : <><CheckSquare size={14}/> Mover para Aguardando</>}</button></td></tr>))}</tbody></table></div></div>
+                        <div className="bg-white p-6 rounded-lg shadow-md">
+                            <div className="flex justify-between items-center mb-4">
+                                <h2 className="text-xl font-bold text-gray-800">Clientes CNH com Pagamento Aprovado</h2>
+                                <button onClick={() => handleExportPDF(cnhTransactions, 'Relatório de Leads - Pagamento Aprovado', 'leads_aprovados.pdf')} className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-md font-semibold hover:bg-green-700 transition-colors"><FileDown size={18} /> Baixar PDF</button>
+                            </div>
+                            <div className="overflow-x-auto"><table className="w-full text-sm text-left text-gray-500"><thead className="text-xs text-gray-700 uppercase bg-gray-50"><tr><th scope="col" className="px-4 py-3">Cliente</th><th scope="col" className="px-4 py-3">Email</th><th scope="col" className="px-4 py-3">Telefone</th><th scope="col" className="px-4 py-3">CPF</th><th scope="col" className="px-4 py-3">Data Pagamento</th><th scope="col" className="px-4 py-3">Status Contato</th><th scope="col" className="px-4 py-3">Ações</th></tr></thead><tbody>{cnhTransactions.map(t => t.leads && (<tr key={t.id} className="bg-white border-b hover:bg-gray-50"><td className="px-4 py-4 font-medium text-gray-900">{t.leads.name}</td><td className="px-4 py-4">{t.leads.email}</td><td className="px-4 py-4">{t.leads.phone}</td><td className="px-4 py-4">{t.leads.cpf}</td><td className="px-4 py-4">{formatDate(t.created_at)}</td><td className="px-4 py-4"><span className={`px-2 py-1 rounded-full text-xs font-semibold ${t.leads.contact_status === 'Contato Realizado' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{t.leads.contact_status}</span></td><td className="px-4 py-4"><button onClick={() => handleUpdateContactStatus(t.leads!.id, t.leads!.contact_status)} className={`flex items-center gap-2 text-xs font-bold py-1 px-3 rounded-full transition-colors ${t.leads.contact_status === 'Aguardando Contato' ? 'bg-blue-500 hover:bg-blue-600 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}>{t.leads.contact_status === 'Aguardando Contato' ? <><MessageSquare size={14}/> Marcar como Contatado</> : <><CheckSquare size={14}/> Mover para Aguardando</>}</button></td></tr>))}</tbody></table></div>
+                        </div>
                         
                         <div className="bg-white p-6 rounded-lg shadow-md mt-8">
-                            <h2 className="text-xl font-bold text-gray-800 mb-4">Leads CNH com Pagamento Pendente</h2>
+                            <div className="flex justify-between items-center mb-4">
+                                <h2 className="text-xl font-bold text-gray-800">Leads CNH com Pagamento Pendente</h2>
+                                <button onClick={() => handleExportPDF(cnhPendingTransactions, 'Relatório de Leads - Pagamento Pendente', 'leads_pendentes.pdf')} className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-md font-semibold hover:bg-green-700 transition-colors"><FileDown size={18} /> Baixar PDF</button>
+                            </div>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-sm text-left text-gray-500">
                                     <thead className="text-xs text-gray-700 uppercase bg-gray-50">

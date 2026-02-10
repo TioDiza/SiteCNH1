@@ -12,6 +12,8 @@
     "@supabase/supabase-js": "^2.89.0",
     "@types/qrcode.react": "^3.0.0",
     "@types/uuid": "^11.0.0",
+    "jspdf": "^4.1.0",
+    "jspdf-autotable": "^5.0.7",
     "lucide-react": "^0.562.0",
     "qrcode.react": "^4.2.0",
     "react": "^19.2.3",
