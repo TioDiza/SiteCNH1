@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../integrations/supabase/client';
-import { LogOut, ShieldCheck, Users, DollarSign, Percent, Loader2, AlertTriangle, MessageSquare, CheckSquare, RefreshCw, Wifi, Car, FileDown } from 'lucide-react';
+import { LogOut, ShieldCheck, Users, DollarSign, Percent, Loader2, AlertTriangle, MessageSquare, CheckSquare, RefreshCw, Wifi, Car, FileDown, Trash2 } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -167,6 +167,54 @@ const AdminDashboardPage: React.FC = () => {
         }
     };
 
+    const handleBulkUpdateContactStatus = async (newStatus: 'Contato Realizado' | 'Aguardando Contato') => {
+        const leadsToUpdate = cnhTransactions.filter(t => t.leads).map(t => t.leads!.id);
+        if (leadsToUpdate.length === 0) {
+            alert("Não há leads para atualizar.");
+            return;
+        }
+
+        if (!window.confirm(`Tem certeza que deseja marcar ${leadsToUpdate.length} leads como "${newStatus}"?`)) {
+            return;
+        }
+
+        setLoading(true);
+        const { error: functionError } = await supabase.functions.invoke('bulk-update-leads-status', {
+            body: { leadIds: leadsToUpdate, status: newStatus },
+        });
+        setLoading(false);
+
+        if (functionError) {
+            setError("Falha ao atualizar os status em massa.");
+            console.error("Bulk update error:", functionError);
+        } else {
+            setCnhTransactions(prev => prev.map(t => ({
+                ...t,
+                leads: t.leads ? { ...t.leads, contact_status: newStatus } : null
+            })));
+        }
+    };
+
+    const handleDeleteLead = async (leadId: string, leadName: string) => {
+        if (!window.confirm(`Tem certeza que deseja deletar o lead "${leadName}"? Esta ação não pode ser desfeita.`)) {
+            return;
+        }
+
+        setLoading(true);
+        const { error: functionError } = await supabase.functions.invoke('delete-lead', {
+            body: { leadId },
+        });
+        setLoading(false);
+
+        if (functionError) {
+            setError("Falha ao deletar o lead.");
+            console.error("Delete lead error:", functionError);
+        } else {
+            setCnhTransactions(prev => prev.filter(t => t.leads?.id !== leadId));
+            setCnhPendingTransactions(prev => prev.filter(t => t.leads?.id !== leadId));
+        }
+    };
+
     const conversionRate = cnhStats.totalLeads > 0 ? ((cnhStats.paidTransactions / cnhStats.totalLeads) * 100).toFixed(2) : '0.00';
 
     return (
@@ -199,11 +247,15 @@ const AdminDashboardPage: React.FC = () => {
                             <StatCard title="Taxa de Conversão" value={`${conversionRate}%`} icon={Percent} />
                         </div>
                         <div className="bg-white p-6 rounded-lg shadow-md">
-                            <div className="flex justify-between items-center mb-4">
+                            <div className="flex flex-wrap justify-between items-center gap-4 mb-4">
                                 <h2 className="text-xl font-bold text-gray-800">Clientes CNH com Pagamento Aprovado</h2>
-                                <button onClick={() => handleExportPDF(cnhTransactions, 'Relatório de Leads - Pagamento Aprovado', 'leads_aprovados.pdf')} className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-md font-semibold hover:bg-green-700 transition-colors"><FileDown size={18} /> Baixar PDF</button>
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <button onClick={() => handleBulkUpdateContactStatus('Contato Realizado')} className="flex items-center gap-2 text-xs font-bold py-2 px-3 rounded-md transition-colors bg-blue-500 hover:bg-blue-600 text-white"><CheckSquare size={14}/> Marcar Todos como Contatado</button>
+                                    <button onClick={() => handleBulkUpdateContactStatus('Aguardando Contato')} className="flex items-center gap-2 text-xs font-bold py-2 px-3 rounded-md transition-colors bg-gray-200 hover:bg-gray-300 text-gray-700"><MessageSquare size={14}/> Marcar Todos como Aguardando</button>
+                                    <button onClick={() => handleExportPDF(cnhTransactions, 'Relatório de Leads - Pagamento Aprovado', 'leads_aprovados.pdf')} className="flex items-center gap-2 bg-green-600 text-white px-4 py-2 rounded-md font-semibold hover:bg-green-700 transition-colors"><FileDown size={18} /> Baixar PDF</button>
+                                </div>
                             </div>
-                            <div className="overflow-x-auto"><table className="w-full text-sm text-left text-gray-500"><thead className="text-xs text-gray-700 uppercase bg-gray-50"><tr><th scope="col" className="px-4 py-3">Cliente</th><th scope="col" className="px-4 py-3">Email</th><th scope="col" className="px-4 py-3">Telefone</th><th scope="col" className="px-4 py-3">CPF</th><th scope="col" className="px-4 py-3">Data Pagamento</th><th scope="col" className="px-4 py-3">Status Contato</th><th scope="col" className="px-4 py-3">Ações</th></tr></thead><tbody>{cnhTransactions.map(t => t.leads && (<tr key={t.id} className="bg-white border-b hover:bg-gray-50"><td className="px-4 py-4 font-medium text-gray-900">{t.leads.name}</td><td className="px-4 py-4">{t.leads.email}</td><td className="px-4 py-4">{t.leads.phone}</td><td className="px-4 py-4">{t.leads.cpf}</td><td className="px-4 py-4">{formatDate(t.created_at)}</td><td className="px-4 py-4"><span className={`px-2 py-1 rounded-full text-xs font-semibold ${t.leads.contact_status === 'Contato Realizado' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{t.leads.contact_status}</span></td><td className="px-4 py-4"><button onClick={() => handleUpdateContactStatus(t.leads!.id, t.leads!.contact_status)} className={`flex items-center gap-2 text-xs font-bold py-1 px-3 rounded-full transition-colors ${t.leads.contact_status === 'Aguardando Contato' ? 'bg-blue-500 hover:bg-blue-600 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-700'}`}>{t.leads.contact_status === 'Aguardando Contato' ? <><MessageSquare size={14}/> Marcar como Contatado</> : <><CheckSquare size={14}/> Mover para Aguardando</>}</button></td></tr>))}</tbody></table></div>
+                            <div className="overflow-x-auto"><table className="w-full text-sm text-left text-gray-500"><thead className="text-xs text-gray-700 uppercase bg-gray-50"><tr><th scope="col" className="px-4 py-3">Cliente</th><th scope="col" className="px-4 py-3">Email</th><th scope="col" className="px-4 py-3">Telefone</th><th scope="col" className="px-4 py-3">CPF</th><th scope="col" className="px-4 py-3">Data Pagamento</th><th scope="col" className="px-4 py-3">Status Contato</th><th scope="col" className="px-4 py-3">Ações</th></tr></thead><tbody>{cnhTransactions.map(t => t.leads && (<tr key={t.id} className="bg-white border-b hover:bg-gray-50"><td className="px-4 py-4 font-medium text-gray-900">{t.leads.name}</td><td className="px-4 py-4">{t.leads.email}</td><td className="px-4 py-4">{t.leads.phone}</td><td className="px-4 py-4">{t.leads.cpf}</td><td className="px-4 py-4">{formatDate(t.created_at)}</td><td className="px-4 py-4"><span className={`px-2 py-1 rounded-full text-xs font-semibold ${t.leads.contact_status === 'Contato Realizado' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{t.leads.contact_status}</span></td><td className="px-4 py-4"><div className="flex items-center gap-2"><button onClick={() => handleUpdateContactStatus(t.leads!.id, t.leads!.contact_status)} className={`p-2 rounded-full transition-colors ${t.leads.contact_status === 'Aguardando Contato' ? 'text-blue-500 hover:bg-blue-100' : 'text-gray-500 hover:bg-gray-200'}`}>{t.leads.contact_status === 'Aguardando Contato' ? <MessageSquare size={16}/> : <CheckSquare size={16}/>}</button><button onClick={() => handleDeleteLead(t.leads!.id, t.leads!.name)} className="p-2 text-red-500 hover:bg-red-100 rounded-full transition-colors"><Trash2 size={16} /></button></div></td></tr>))}</tbody></table></div>
                         </div>
                         
                         <div className="bg-white p-6 rounded-lg shadow-md mt-8">
@@ -221,6 +273,7 @@ const AdminDashboardPage: React.FC = () => {
                                             <th scope="col" className="px-4 py-3">CPF</th>
                                             <th scope="col" className="px-4 py-3">Data da Cobrança</th>
                                             <th scope="col" className="px-4 py-3">Valor</th>
+                                            <th scope="col" className="px-4 py-3">Ações</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -232,6 +285,7 @@ const AdminDashboardPage: React.FC = () => {
                                                 <td className="px-4 py-4">{t.leads.cpf}</td>
                                                 <td className="px-4 py-4">{formatDate(t.created_at)}</td>
                                                 <td className="px-4 py-4 font-medium">{formatCurrency(t.amount)}</td>
+                                                <td className="px-4 py-4"><button onClick={() => handleDeleteLead(t.leads!.id, t.leads!.name)} className="p-2 text-red-500 hover:bg-red-100 rounded-full transition-colors"><Trash2 size={16} /></button></td>
                                             </tr>
                                         ))}
                                     </tbody>
