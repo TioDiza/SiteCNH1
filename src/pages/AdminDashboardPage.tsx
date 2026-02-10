@@ -165,11 +165,18 @@ const AdminDashboardPage: React.FC = () => {
 
     const handleUpdateContactStatus = async (leadId: string, currentStatus: string) => {
         const newStatus = currentStatus === 'Aguardando Contato' ? 'Contato Realizado' : 'Aguardando Contato';
+        
+        // Optimistic UI update for both lists
         setCnhTransactions(prev => prev.map(t => t.leads?.id === leadId ? { ...t, leads: { ...t.leads!, contact_status: newStatus } } : t));
+        setCnhPendingTransactions(prev => prev.map(t => t.leads?.id === leadId ? { ...t, leads: { ...t.leads!, contact_status: newStatus } } : t));
+
         const { error: updateError } = await supabase.from('leads').update({ contact_status: newStatus }).eq('id', leadId);
+        
         if (updateError) {
             setError("Falha ao atualizar o status.");
+            // Revert UI update on failure
             setCnhTransactions(prev => prev.map(t => t.leads?.id === leadId ? { ...t, leads: { ...t.leads!, contact_status: currentStatus } } : t));
+            setCnhPendingTransactions(prev => prev.map(t => t.leads?.id === leadId ? { ...t, leads: { ...t.leads!, contact_status: currentStatus } } : t));
         }
     };
 
@@ -278,7 +285,7 @@ const AdminDashboardPage: React.FC = () => {
                                             <th scope="col" className="px-4 py-3">Telefone</th>
                                             <th scope="col" className="px-4 py-3">CPF</th>
                                             <th scope="col" className="px-4 py-3">Data da Cobrança</th>
-                                            <th scope="col" className="px-4 py-3">Valor</th>
+                                            <th scope="col" className="px-4 py-3">Status Contato</th>
                                             <th scope="col" className="px-4 py-3">Ações</th>
                                         </tr>
                                     </thead>
@@ -290,8 +297,21 @@ const AdminDashboardPage: React.FC = () => {
                                                 <td className="px-4 py-4">{t.leads.phone}</td>
                                                 <td className="px-4 py-4">{formatCpf(t.leads.cpf)}</td>
                                                 <td className="px-4 py-4">{formatDate(t.created_at)}</td>
-                                                <td className="px-4 py-4 font-medium">{formatCurrency(t.amount)}</td>
-                                                <td className="px-4 py-4"><button onClick={() => handleDeleteLead(t.leads!.id, t.leads!.name)} className="p-2 text-red-500 hover:bg-red-100 rounded-full transition-colors"><Trash2 size={16} /></button></td>
+                                                <td className="px-4 py-4">
+                                                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${t.leads.contact_status === 'Contato Realizado' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
+                                                        {t.leads.contact_status}
+                                                    </span>
+                                                </td>
+                                                <td className="px-4 py-4">
+                                                    <div className="flex items-center gap-2">
+                                                        <button onClick={() => handleUpdateContactStatus(t.leads!.id, t.leads!.contact_status)} className={`p-2 rounded-full transition-colors ${t.leads.contact_status === 'Aguardando Contato' ? 'text-blue-500 hover:bg-blue-100' : 'text-gray-500 hover:bg-gray-200'}`}>
+                                                            {t.leads.contact_status === 'Aguardando Contato' ? <MessageSquare size={16}/> : <CheckSquare size={16}/>}
+                                                        </button>
+                                                        <button onClick={() => handleDeleteLead(t.leads!.id, t.leads!.name)} className="p-2 text-red-500 hover:bg-red-100 rounded-full transition-colors">
+                                                            <Trash2 size={16} />
+                                                        </button>
+                                                    </div>
+                                                </td>
                                             </tr>
                                         ))}
                                     </tbody>
