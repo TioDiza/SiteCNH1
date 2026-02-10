@@ -52,9 +52,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
   // Este efeito roda sempre que o usuário muda (após login, logout, ou carregamento inicial)
   useEffect(() => {
-    // Se temos um usuário mas ainda não temos o perfil, buscamos ele.
+    // Se temos um usuário, buscamos o perfil dele.
     if (user) {
-      setLoading(true); // Estamos carregando o perfil agora
+      // Mostra o loader de página inteira apenas no carregamento inicial do perfil.
+      // Atualizações subsequentes (ex: ao focar na aba) acontecerão em segundo plano.
+      if (!profile) {
+        setLoading(true);
+      }
+      
       supabase
         .from('profiles')
         .select('role')
@@ -67,11 +72,13 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           } else {
             setProfile(data);
           }
-          setLoading(false); // Terminamos de carregar o perfil
+          // Finaliza o carregamento após buscar o perfil (ou falhar).
+          setLoading(false);
         });
     } else {
-      // Sem usuário, sem perfil.
+      // Sem usuário, sem perfil, e não estamos carregando.
       setProfile(null);
+      setLoading(false);
     }
   }, [user]); // Dependência no `user`
 
