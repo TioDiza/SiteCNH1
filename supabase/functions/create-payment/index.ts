@@ -1,13 +1,11 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
-import { getPixUpToken } from "../_shared/pixup.ts"
+import { createFusionPayPix } from "../_shared/fusionpay.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
-
-const PIXUP_QRCODE_URL = 'https://api.pixupbr.com/v2/pix/qrcode';
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -36,48 +34,39 @@ serve(async (req) => {
         });
     }
 
-    const accessToken = await getPixUpToken();
-
     const webhookUrl = 'https://lubhskftgevcgfkzxozx.supabase.co/functions/v1/payment-webhook';
     const externalId = lead_id || starlink_customer_id;
 
+    // OBS: A estrutura do payload foi adaptada com base em APIs PIX comuns.
+    // Pode ser necessário ajustar os nomes dos campos se a documentação da FusionPay especificar algo diferente.
     const payload = {
       amount: amount,
       external_id: externalId,
-      postbackUrl: webhookUrl,
-      payerQuestion: "Pagamento referente ao Programa CNH do Brasil",
-      payer: {
+      webhook_url: webhookUrl,
+      description: "Pagamento referente ao Programa CNH do Brasil",
+      customer: {
         name: client.name,
         document: client.document,
       }
     };
 
-    const qrResponse = await fetch(PIXUP_QRCODE_URL, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    });
+    const fusionPayResponse = await createFusionPayPix(payload);
 
-    const qrData = await qrResponse.json();
+    // OBS: Acessando os dados da resposta. Isso pode precisar de ajuste conforme a estrutura real da resposta da FusionPay.
+    const transactionId = fusionPayResponse.transaction?.id;
+    const pixCode = fusionPayResponse.transaction?.emv;
 
-    if (!qrResponse.ok) {
-        console.error('[create-payment] Erro da API PixUp:', qrData);
-        const errorMessage = qrData.message || 'Falha ao gerar a cobrança PIX.';
-        return new Response(JSON.stringify({ error: errorMessage }), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: qrResponse.status,
-        });
+    if (!transactionId || !pixCode) {
+        console.error('[create-payment] Resposta da FusionPay não contém ID da transação ou código PIX.', fusionPayResponse);
+        throw new Error('Resposta inválida do provedor de pagamento.');
     }
 
     const transactionPayload = {
-        gateway_transaction_id: qrData.transactionId,
+        gateway_transaction_id: transactionId,
         amount: amount,
         status: 'pending',
-        provider: 'pixup',
-        raw_gateway_response: qrData,
+        provider: 'fusionpay', // Atualizado para o novo provedor
+        raw_gateway_response: fusionPayResponse,
         lead_id: lead_id || null,
         starlink_customer_id: starlink_customer_id || null,
         event_id: event_id || null,
@@ -97,8 +86,8 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({
       status: 'success',
-      pixCode: qrData.qrcode,
-      transactionId: qrData.transactionId,
+      pixCode: pixCode,
+      transactionId: transactionId,
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
