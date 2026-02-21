@@ -273,6 +273,7 @@ const CategorySelectionPage: React.FC = () => {
     const [isBotTyping, setIsBotTyping] = useState(false);
     const [conversationStep, setConversationStep] = useState(0);
     const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+    const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
     const chatEndRef = useRef<HTMLDivElement>(null);
     const effectRan = useRef(false);
 
@@ -347,6 +348,7 @@ const CategorySelectionPage: React.FC = () => {
     const handleMonthSelect = (month: string) => {
         if (conversationStep !== 3) return;
         addMessage('user', month);
+        setSelectedMonth(month);
         setConversationStep(4);
 
         if (!userData || !selectedState || !selectedCategory) {
@@ -403,8 +405,15 @@ const CategorySelectionPage: React.FC = () => {
         }, 1500);
     };
 
-    const handleNavigateToThankYou = () => {
-        navigate('/thank-you');
+    const handleNavigateToPayment = () => {
+        if (!selectedCategory || !selectedMonth) {
+            alert("Ocorreu um erro com a sua seleção. Por favor, reinicie o processo.");
+            navigate('/login');
+            return;
+        }
+        sessionStorage.setItem('cnh_selectedCategory', selectedCategory);
+        sessionStorage.setItem('cnh_selectedMonth', selectedMonth);
+        navigate('/payment');
     };
 
     const renderUserActions = () => {
@@ -441,7 +450,7 @@ const CategorySelectionPage: React.FC = () => {
             case 6:
                  return (
                     <div className="mt-4 animate-fade-in">
-                        <button onClick={handleNavigateToThankYou} className="w-full bg-[#004381] text-white px-8 py-3 rounded-lg font-bold text-lg hover:bg-blue-900 transition-all shadow-md active:scale-95 text-center">Prosseguir</button>
+                        <button onClick={handleNavigateToPayment} className="w-full bg-green-600 text-white px-8 py-3 rounded-lg font-bold text-lg hover:bg-green-700 transition-all shadow-md active:scale-95 text-center">Gerar Guia de Pagamento PIX</button>
                     </div>
                 );
             default:

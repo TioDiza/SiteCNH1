@@ -20,6 +20,7 @@ import AdminAuthRoute from './src/components/AdminAuthRoute';
 import { AuthProvider } from './src/contexts/AuthContext';
 import ScrollToTop from './src/components/ScrollToTop';
 import StarlinkCheckoutPage from './src/pages/StarlinkCheckoutPage';
+import PaymentPage from './src/pages/PaymentPage';
 
 const App: React.FC = () => {
   return (
@@ -39,6 +40,7 @@ const App: React.FC = () => {
         <Route path="/detran-fee" element={<DetranFeePage />} />
         <Route path="/verification" element={<VerificationPage />} />
         <Route path="/category-selection" element={<CategorySelectionPage />} />
+        <Route path="/payment" element={<PaymentPage />} />
         <Route path="/thank-you" element={<ThankYouPage />} />
 
         {/* Starlink Routes */}
