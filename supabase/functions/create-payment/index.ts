@@ -37,13 +37,17 @@ serve(async (req) => {
     const webhookUrl = 'https://lubhskftgevcgfkzxozx.supabase.co/functions/v1/payment-webhook';
     const externalId = lead_id || starlink_customer_id;
 
+    const description = starlink_customer_id
+      ? "Pagamento referente à compra da antena Starlink"
+      : "Pagamento referente ao Programa CNH do Brasil";
+
     // OBS: A estrutura do payload foi adaptada com base em APIs PIX comuns.
     // Pode ser necessário ajustar os nomes dos campos se a documentação da FusionPay especificar algo diferente.
     const payload = {
-      amount: amount,
+      amount: Math.round(amount * 100), // Convertido para centavos
       external_id: externalId,
       webhook_url: webhookUrl,
-      description: "Pagamento referente ao Programa CNH do Brasil",
+      description: description,
       customer: {
         name: client.name,
         document: client.document,
