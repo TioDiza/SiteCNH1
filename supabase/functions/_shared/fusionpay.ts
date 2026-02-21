@@ -19,11 +19,11 @@ export function getFusionPayAuthHeader(): string {
 }
 
 /**
- * Cria uma nova transação de pagamento PIX usando a API da FusionPay.
+ * Cria uma nova transação de pagamento usando a API da FusionPay.
  * @param payload - Os dados da transação.
  * @returns Os dados da transação criada.
  */
-export async function createFusionPayPix(payload: object) {
+export async function createFusionPayTransaction(payload: object) {
   const authHeader = getFusionPayAuthHeader();
 
   const response = await fetch(FUSIONPAY_API_URL, {
@@ -38,7 +38,7 @@ export async function createFusionPayPix(payload: object) {
   const data = await response.json();
 
   if (!response.ok) {
-    console.error('[createFusionPayPix] Falha ao criar transação na FusionPay:', response.status, data);
+    console.error('[createFusionPayTransaction] Falha ao criar transação na FusionPay:', response.status, data);
     throw new Error(data.message || 'Falha na comunicação com o provedor de pagamento.');
   }
 
