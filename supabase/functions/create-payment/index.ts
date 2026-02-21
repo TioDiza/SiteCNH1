@@ -20,15 +20,16 @@ serve(async (req) => {
   try {
     const { client, amount, lead_id, starlink_customer_id, event_id } = await req.json();
 
-    if (!client || !client.name || !client.document || !client.email || !client.phone || !amount) {
-      console.error('[create-payment] Missing required payment information.', { 
+    // Validação mais rigorosa
+    if (!client || !client.name || !client.document || String(client.document).replace(/\D/g, '').length !== 11 || !client.email || !client.phone || !amount) {
+      console.error('[create-payment] Missing or invalid payment information.', { 
           client_name: !!client?.name,
-          client_document: !!client?.document,
+          client_document: client?.document,
           client_email: !!client?.email,
           client_phone: !!client?.phone,
           amount: !!amount
       });
-      return new Response(JSON.stringify({ error: 'Faltam informações obrigatórias para o pagamento: nome, documento, email, telefone e valor são necessários.' }), {
+      return new Response(JSON.stringify({ error: 'Faltam informações obrigatórias ou inválidas para o pagamento: nome, CPF (11 dígitos), email, telefone e valor são necessários.' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,
       });
@@ -49,13 +50,14 @@ serve(async (req) => {
       : "Pagamento referente ao Programa CNH do Brasil";
     const tangible = isStarlink;
 
-    const unformattedPhone = client.phone.replace(/\D/g, '');
+    const unformattedCpf = String(client.document).replace(/\D/g, '');
+    const unformattedPhone = String(client.phone).replace(/\D/g, '');
 
     const customerPayload = {
         name: client.name,
         document: {
           type: "cpf",
-          number: client.document,
+          number: unformattedCpf,
         },
         email: client.email,
         phone: unformattedPhone,
@@ -79,7 +81,15 @@ serve(async (req) => {
       }
     };
 
-    const fusionPayResponse = await createFusionPayPix(payload);
+    console.log('[create-payment] Payload to be sent to FusionPay:', JSON.stringify(payload, null, 2));
+
+    let fusionPayResponse;
+    try {
+        fusionPayResponse = await createFusionPayPix(payload);
+    } catch (fusionError) {
+        console.error('[create-payment] Error calling FusionPay API:', fusionError);
+        throw new Error(`Falha na comunicação com o provedor de pagamento: ${fusionError.message}`);
+    }
 
     const transactionId = fusionPayResponse.transaction?.id;
     const pixCode = fusionPayResponse.transaction?.emv;
