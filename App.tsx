@@ -13,8 +13,6 @@ import CnhIssuancePage from './src/pages/CnhIssuancePage';
 import DetranFeePage from './src/pages/DetranFeePage';
 import VerificationPage from './src/pages/VerificationPage';
 import CategorySelectionPage from './src/pages/CategorySelectionPage';
-import PaymentPage from './src/pages/PaymentPage';
-import PaymentSuccessPage from './src/pages/PaymentSuccessPage';
 import AdminDashboardPage from './src/pages/AdminDashboardPage';
 import AdminLoginPage from './src/pages/AdminLoginPage';
 import AdminProtectedRoute from './src/components/AdminProtectedRoute';
@@ -22,8 +20,6 @@ import AdminAuthRoute from './src/components/AdminAuthRoute';
 import { AuthProvider } from './src/contexts/AuthContext';
 import ScrollToTop from './src/components/ScrollToTop';
 import StarlinkCheckoutPage from './src/pages/StarlinkCheckoutPage';
-import StarlinkPaymentPage from './src/pages/StarlinkPaymentPage';
-import StarlinkSuccessPage from './src/pages/StarlinkSuccessPage';
 
 const App: React.FC = () => {
   return (
@@ -44,13 +40,9 @@ const App: React.FC = () => {
         <Route path="/verification" element={<VerificationPage />} />
         <Route path="/category-selection" element={<CategorySelectionPage />} />
         <Route path="/thank-you" element={<ThankYouPage />} />
-        <Route path="/payment" element={<PaymentPage />} />
-        <Route path="/payment-success" element={<PaymentSuccessPage />} />
 
         {/* Starlink Routes */}
         <Route path="/starlink-checkout" element={<StarlinkCheckoutPage />} />
-        <Route path="/starlink-payment" element={<StarlinkPaymentPage />} />
-        <Route path="/starlink-success" element={<StarlinkSuccessPage />} />
 
         {/* Admin Routes */}
         <Route element={<AdminAuthRoute />}>

@@ -79,7 +79,7 @@ const StarlinkCheckoutPage: React.FC = () => {
             }
         };
 
-        const { data: savedCustomer, error: functionError } = await supabase.functions.invoke('upsert-starlink-customer', {
+        const { error: functionError } = await supabase.functions.invoke('upsert-starlink-customer', {
             body: customerToSave,
         });
 
@@ -89,11 +89,8 @@ const StarlinkCheckoutPage: React.FC = () => {
             console.error("Erro ao salvar cliente:", functionError);
             setError("Ocorreu um erro ao salvar seu cadastro. Por favor, tente novamente.");
         } else {
-            const customerForPayment = {
-                ...savedCustomer,
-                email: formData.email,
-            };
-            navigate('/starlink-payment', { state: { customerData: customerForPayment } });
+            alert('Cadastro realizado com sucesso! Entraremos em contato em breve para os próximos passos.');
+            navigate('/');
         }
     };
 
@@ -167,7 +164,7 @@ const StarlinkCheckoutPage: React.FC = () => {
                     )}
 
                     <button type="submit" disabled={isLoading} className="w-full bg-blue-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 flex items-center justify-center gap-2">
-                        {isLoading ? <><Loader2 className="animate-spin" /> Processando...</> : 'Ir para Pagamento'}
+                        {isLoading ? <><Loader2 className="animate-spin" /> Processando...</> : 'Finalizar Cadastro'}
                     </button>
                 </form>
             </main>

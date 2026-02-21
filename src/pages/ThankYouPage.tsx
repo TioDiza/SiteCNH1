@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { User, AlertTriangle } from 'lucide-react';
 
 interface UserData {
@@ -42,10 +42,6 @@ const ThankYouPage: React.FC = () => {
         }
     }, [navigate]);
 
-    const handleFinalize = () => {
-        navigate('/payment');
-    };
-
     if (!userData) {
         return null; // Or a loading spinner
     }
@@ -70,15 +66,15 @@ const ThankYouPage: React.FC = () => {
                         Todo o processo foi concluído em apenas <strong>11 dias</strong>, desde o cadastro até o recebimento da CNH em sua residência.
                     </p>
 
-                    <div className="bg-red-100 border-l-8 border-red-500 text-red-900 p-6 rounded-lg mb-8 flex items-start gap-4 shadow-lg animate-pulse">
-                        <AlertTriangle className="w-10 h-10 flex-shrink-0 text-red-600" />
+                    <div className="bg-yellow-100 border-l-8 border-yellow-500 text-yellow-900 p-6 rounded-lg mb-8 flex items-start gap-4 shadow-lg">
+                        <AlertTriangle className="w-10 h-10 flex-shrink-0 text-yellow-600" />
                         <div>
-                            <p><strong>ATENÇÃO:</strong> O não pagamento da taxa administrativa dentro do prazo estabelecido resultará no <strong>cancelamento automático do cadastro e bloqueio do CPF no sistema por um período de 18 (dezoito) meses</strong>, impossibilitando nova inscrição no programa.</p>
+                            <p><strong>Próximos Passos:</strong> Nossa equipe entrará em contato via WhatsApp para informar sobre as taxas administrativas e os próximos passos do seu cadastro. Fique atento!</p>
                         </div>
                     </div>
 
                     <div className="mb-6">
-                        <h2 className="text-xl font-bold text-gray-800 mb-4">Após a confirmação do pagamento:</h2>
+                        <h2 className="text-xl font-bold text-gray-800 mb-4">Após a confirmação do seu cadastro:</h2>
                         <div className="space-y-3 text-gray-700">
                             <div className="flex items-start gap-3">
                                 <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white font-bold text-sm rounded-full flex items-center justify-center">1</span>
@@ -99,12 +95,12 @@ const ThankYouPage: React.FC = () => {
                         Assim como Andreza e milhares de brasileiros que já foram beneficiados pelo programa, finalize seu cadastro agora e garanta sua vaga.
                     </p>
 
-                    <button 
-                        onClick={handleFinalize}
-                        className="w-full bg-[#0d6efd] text-white py-4 rounded-lg font-bold text-lg hover:bg-blue-700 transition-colors animate-pulse"
+                    <Link 
+                        to="/"
+                        className="w-full block text-center bg-gray-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-gray-700 transition-colors"
                     >
-                        Finalizar Cadastro
-                    </button>
+                        Voltar para o Início
+                    </Link>
                 </div>
             </main>
         </div>
