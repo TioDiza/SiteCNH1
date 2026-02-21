@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../integrations/supabase/client';
-import { QRCode } from 'qrcode.react';
+import QRCode from 'qrcode.react';
 import { User, Loader2, AlertTriangle, Copy, CheckCircle, Clock } from 'lucide-react';
 
 const PaymentHeader: React.FC<{ userName?: string }> = ({ userName }) => (
