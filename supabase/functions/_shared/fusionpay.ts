@@ -7,7 +7,7 @@ const FUSIONPAY_SECRET_KEY = Deno.env.get('FUSIONPAY_SECRET_KEY');
  * Gera o header de autenticação Basic para a FusionPay.
  * A autenticação é Basic Base64(PUBLIC_KEY:SECRET_KEY).
  */
-function getFusionPayAuthHeader(): string {
+export function getFusionPayAuthHeader(): string {
   if (!FUSIONPAY_PUBLIC_KEY || !FUSIONPAY_SECRET_KEY) {
     console.error('[getFusionPayAuthHeader] As chaves da FusionPay não estão configuradas.');
     throw new Error('Configuração do provedor de pagamento incompleta.');
