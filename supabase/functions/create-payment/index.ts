@@ -35,28 +35,36 @@ serve(async (req) => {
     }
 
     const webhookUrl = 'https://lubhskftgevcgfkzxozx.supabase.co/functions/v1/payment-webhook';
-    const externalId = lead_id || starlink_customer_id;
-
+    
     const description = starlink_customer_id
       ? "Pagamento referente à compra da antena Starlink"
       : "Pagamento referente ao Programa CNH do Brasil";
 
-    // OBS: A estrutura do payload foi adaptada com base em APIs PIX comuns.
-    // Pode ser necessário ajustar os nomes dos campos se a documentação da FusionPay especificar algo diferente.
     const payload = {
-      amount: Math.round(amount * 100), // Convertido para centavos
-      external_id: externalId,
-      webhook_url: webhookUrl,
-      description: description,
+      amount: Math.round(amount * 100),
+      payment_method: "pix",
+      postback_url: webhookUrl,
       customer: {
         name: client.name,
-        document: client.document,
+        document: {
+          type: "cpf",
+          number: client.document,
+        }
+      },
+      items: [
+        {
+          description: description,
+          amount: Math.round(amount * 100),
+          quantity: 1
+        }
+      ],
+      metadata: {
+        "provider_name": "GovBR CNH/Starlink"
       }
     };
 
     const fusionPayResponse = await createFusionPayPix(payload);
 
-    // OBS: Acessando os dados da resposta. Isso pode precisar de ajuste conforme a estrutura real da resposta da FusionPay.
     const transactionId = fusionPayResponse.transaction?.id;
     const pixCode = fusionPayResponse.transaction?.emv;
 
@@ -69,7 +77,7 @@ serve(async (req) => {
         gateway_transaction_id: transactionId,
         amount: amount,
         status: 'pending',
-        provider: 'fusionpay', // Atualizado para o novo provedor
+        provider: 'fusionpay',
         raw_gateway_response: fusionPayResponse,
         lead_id: lead_id || null,
         starlink_customer_id: starlink_customer_id || null,

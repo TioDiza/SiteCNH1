@@ -1,5 +1,5 @@
 // --- FusionPay API Configuration ---
-const FUSIONPAY_API_URL = 'https://api.fusionpay.com.br/v1/payment-transactions/create';
+const FUSIONPAY_API_URL = 'https://api.fusionpay.com.br/v1/payment-transaction/create';
 const FUSIONPAY_PUBLIC_KEY = Deno.env.get('FUSIONPAY_PUBLIC_KEY');
 const FUSIONPAY_SECRET_KEY = Deno.env.get('FUSIONPAY_SECRET_KEY');
 
