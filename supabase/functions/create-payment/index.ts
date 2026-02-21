@@ -36,9 +36,11 @@ serve(async (req) => {
 
     const webhookUrl = 'https://lubhskftgevcgfkzxozx.supabase.co/functions/v1/payment-webhook';
     
-    const description = starlink_customer_id
+    const isStarlink = !!starlink_customer_id;
+    const description = isStarlink
       ? "Pagamento referente à compra da antena Starlink"
       : "Pagamento referente ao Programa CNH do Brasil";
+    const tangible = isStarlink;
 
     const customerPayload: {
         name: string;
@@ -68,9 +70,10 @@ serve(async (req) => {
       customer: customerPayload,
       items: [
         {
-          description: description,
-          amount: Math.round(amount * 100),
-          quantity: 1
+          title: description,
+          unit_price: Math.round(amount * 100),
+          quantity: 1,
+          tangible: tangible
         }
       ],
       metadata: {
