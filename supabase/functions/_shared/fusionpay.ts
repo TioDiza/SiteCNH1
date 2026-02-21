@@ -7,12 +7,12 @@ const FUSIONPAY_SECRET_KEY = Deno.env.get('FUSIONPAY_SECRET_KEY');
  * Gera o header de autenticação Basic para a FusionPay.
  */
 function getFusionPayAuthHeader(): string {
-  if (!FUSIONPAY_SECRET_KEY) {
-    console.error('[getFusionPayAuthHeader] A chave secreta da FusionPay não está configurada.');
+  if (!FUSIONPAY_PUBLIC_KEY || !FUSIONPAY_SECRET_KEY) {
+    console.error('[getFusionPayAuthHeader] As chaves pública ou secreta da FusionPay não estão configuradas.');
     throw new Error('Configuração do provedor de pagamento incompleta.');
   }
-  // A autenticação Basic da FusionPay usa a Secret Key como username e a senha em branco.
-  const credentials = `${FUSIONPAY_SECRET_KEY}:`;
+  // A autenticação Basic da FusionPay usa a Public Key como username e a Secret Key como senha.
+  const credentials = `${FUSIONPAY_PUBLIC_KEY}:${FUSIONPAY_SECRET_KEY}`;
   const base64Credentials = btoa(credentials);
   return `Basic ${base64Credentials}`;
 }
