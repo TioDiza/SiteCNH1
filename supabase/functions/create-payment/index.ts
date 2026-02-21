@@ -40,17 +40,32 @@ serve(async (req) => {
       ? "Pagamento referente à compra da antena Starlink"
       : "Pagamento referente ao Programa CNH do Brasil";
 
-    const payload = {
-      amount: Math.round(amount * 100),
-      payment_method: "pix",
-      postback_url: webhookUrl,
-      customer: {
+    const customerPayload: {
+        name: string;
+        document: { type: string; number: string; };
+        email?: string;
+        phone?: string;
+    } = {
         name: client.name,
         document: {
           type: "cpf",
           number: client.document,
         }
-      },
+    };
+
+    if (client.email) {
+        customerPayload.email = client.email;
+    }
+    if (client.phone) {
+        const unformattedPhone = client.phone.replace(/\D/g, '');
+        customerPayload.phone = unformattedPhone;
+    }
+
+    const payload = {
+      amount: Math.round(amount * 100),
+      payment_method: "pix",
+      postback_url: webhookUrl,
+      customer: customerPayload,
       items: [
         {
           description: description,

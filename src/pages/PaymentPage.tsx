@@ -63,6 +63,8 @@ const PaymentPage: React.FC = () => {
                 const clientPayload = {
                     name: data.name,
                     document: unformattedCpf,
+                    email: data.email,
+                    phone: data.phone,
                 };
 
                 const { data: paymentResult, error: functionError } = await supabase.functions.invoke('create-payment', {
