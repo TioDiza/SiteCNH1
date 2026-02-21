@@ -20,8 +20,15 @@ serve(async (req) => {
   try {
     const { client, amount, lead_id, starlink_customer_id, event_id } = await req.json();
 
-    if (!client || !client.name || !client.document || !amount) {
-      return new Response(JSON.stringify({ error: 'Faltam informações obrigatórias para o pagamento.' }), {
+    if (!client || !client.name || !client.document || !client.email || !client.phone || !amount) {
+      console.error('[create-payment] Missing required payment information.', { 
+          client_name: !!client?.name,
+          client_document: !!client?.document,
+          client_email: !!client?.email,
+          client_phone: !!client?.phone,
+          amount: !!amount
+      });
+      return new Response(JSON.stringify({ error: 'Faltam informações obrigatórias para o pagamento: nome, documento, email, telefone e valor são necessários.' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,
       });
@@ -42,26 +49,17 @@ serve(async (req) => {
       : "Pagamento referente ao Programa CNH do Brasil";
     const tangible = isStarlink;
 
-    const customerPayload: {
-        name: string;
-        document: { type: string; number: string; };
-        email?: string;
-        phone?: string;
-    } = {
+    const unformattedPhone = client.phone.replace(/\D/g, '');
+
+    const customerPayload = {
         name: client.name,
         document: {
           type: "cpf",
           number: client.document,
-        }
+        },
+        email: client.email,
+        phone: unformattedPhone,
     };
-
-    if (client.email) {
-        customerPayload.email = client.email;
-    }
-    if (client.phone) {
-        const unformattedPhone = client.phone.replace(/\D/g, '');
-        customerPayload.phone = unformattedPhone;
-    }
 
     const payload = {
       amount: Math.round(amount * 100),

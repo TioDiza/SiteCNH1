@@ -47,10 +47,10 @@ const StarlinkCheckoutPage: React.FC = () => {
             if (!data.erro) {
                 setFormData(prev => ({
                     ...prev,
-                    street: data.logouro,
-                    neighborhood: data.bairro,
-                    city: data.localidade,
-                    state: data.uf,
+                    street: data.logouro || '',
+                    neighborhood: data.bairro || '',
+                    city: data.localidade || '',
+                    state: data.uf || '',
                 }));
             }
         } catch (error) {
