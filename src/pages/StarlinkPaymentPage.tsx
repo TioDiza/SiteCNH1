@@ -32,6 +32,7 @@ const StarlinkPaymentPage: React.FC = () => {
                     name: customerData.name,
                     document: customerData.cpf,
                     phone: customerData.phone,
+                    email: customerData.email,
                 };
 
                 const { data: paymentResult, error: functionError } = await supabase.functions.invoke('create-payment', {

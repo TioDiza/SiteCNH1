@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Home, Phone, Hash, Loader2, AlertTriangle } from 'lucide-react';
+import { Loader2, AlertTriangle } from 'lucide-react';
 import { supabase } from '../integrations/supabase/client';
 
 const StarlinkCheckoutPage: React.FC = () => {
@@ -9,6 +9,7 @@ const StarlinkCheckoutPage: React.FC = () => {
         name: '',
         cpf: '',
         phone: '',
+        email: '',
         cep: '',
         street: '',
         number: '',
@@ -64,14 +65,22 @@ const StarlinkCheckoutPage: React.FC = () => {
         setIsLoading(true);
         setError(null);
 
-        const customerData = {
+        const customerToSave = {
             name: formData.name,
             cpf: formData.cpf.replace(/\D/g, ''),
             phone: formData.phone,
+            address: {
+                cep: formData.cep,
+                street: formData.street,
+                number: formData.number,
+                neighborhood: formData.neighborhood,
+                city: formData.city,
+                state: formData.state,
+            }
         };
 
-        const { data, error: functionError } = await supabase.functions.invoke('upsert-starlink-customer', {
-            body: customerData,
+        const { data: savedCustomer, error: functionError } = await supabase.functions.invoke('upsert-starlink-customer', {
+            body: customerToSave,
         });
 
         setIsLoading(false);
@@ -80,7 +89,11 @@ const StarlinkCheckoutPage: React.FC = () => {
             console.error("Erro ao salvar cliente:", functionError);
             setError("Ocorreu um erro ao salvar seu cadastro. Por favor, tente novamente.");
         } else {
-            navigate('/starlink-payment', { state: { customerData: data } });
+            const customerForPayment = {
+                ...savedCustomer,
+                email: formData.email,
+            };
+            navigate('/starlink-payment', { state: { customerData: customerForPayment } });
         }
     };
 
@@ -103,9 +116,15 @@ const StarlinkCheckoutPage: React.FC = () => {
                             <input type="text" name="cpf" value={formData.cpf} onChange={handleInputChange} required className="w-full p-3 border rounded-lg mt-1" />
                         </div>
                     </div>
-                    <div>
-                        <label className="font-bold">Celular (WhatsApp)</label>
-                        <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} required className="w-full p-3 border rounded-lg mt-1" />
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label className="font-bold">Celular (WhatsApp)</label>
+                            <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} required className="w-full p-3 border rounded-lg mt-1" />
+                        </div>
+                        <div>
+                            <label className="font-bold">Email</label>
+                            <input type="email" name="email" value={formData.email} onChange={handleInputChange} required className="w-full p-3 border rounded-lg mt-1" />
+                        </div>
                     </div>
                     <hr />
                     <h2 className="text-xl font-bold text-gray-700">Endereço de Entrega</h2>
