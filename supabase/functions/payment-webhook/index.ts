@@ -37,36 +37,29 @@ const handler = async (req: Request): Promise<Response> => {
     });
   }
 
-  const requestBody = payload.requestBody;
-
-  if (!requestBody) {
-    console.warn('[payment-webhook] Webhook received without requestBody. Payload:', payload);
-    return new Response(JSON.stringify({ status: 'ok' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
-  }
-
-  const transactionId = requestBody.transactionId;
-  const status = requestBody.status;
+  const transactionId = payload.Id;
+  const status = payload.Status;
   let dbStatus = '';
 
   if (!transactionId || !status) {
-      console.warn('[payment-webhook] Webhook received without transactionId or status. Payload:', payload);
+      console.warn('[payment-webhook] Webhook received without Id or Status. Payload:', payload);
       return new Response(JSON.stringify({ status: 'ok' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
   }
 
   switch (status.toUpperCase()) {
     case 'PAID':
-    case 'CONFIRMED':
       dbStatus = 'paid';
       break;
     case 'REFUNDED':
       dbStatus = 'refunded';
       break;
-    case 'CANCELED':
+    case 'REFUSED':
     case 'EXPIRED':
+    case 'ERROR':
        dbStatus = 'canceled';
        break;
     default:
-      console.warn(`[payment-webhook] Received unhandled webhook status: '${status}'`);
+      console.warn(`[payment-webhook] Received unhandled webhook status: '${status}' for transaction ${transactionId}`);
       return new Response(JSON.stringify({ status: 'ok' }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 200 });
   }
 
