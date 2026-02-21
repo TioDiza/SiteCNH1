@@ -42,3 +42,30 @@ export async function createFusionPayPix(payload: object) {
 
   return data;
 }
+
+/**
+ * Busca informações de uma transação na FusionPay.
+ * @param transactionId - O ID da transação.
+ * @returns Os dados da transação.
+ */
+export async function getFusionPayTransaction(transactionId: string) {
+  const authHeader = getFusionPayAuthHeader();
+  const url = `https://api.fusionpay.com.br/v1/payment-transaction/info/${transactionId}`;
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Authorization': authHeader,
+      'accept': 'application/json',
+    },
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    console.error(`[getFusionPayTransaction] Falha ao buscar transação ${transactionId} na FusionPay:`, response.status, data);
+    throw new Error(data.message || 'Falha na comunicação com o provedor de pagamento.');
+  }
+
+  return data;
+}
