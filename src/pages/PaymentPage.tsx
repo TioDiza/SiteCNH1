@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../integrations/supabase/client';
-import { QRCodeSVG } from 'qrcode.react';
+import * as qrcode from 'qrcode.react';
 import { User, Loader2, AlertTriangle, Copy, CheckCircle, Clock } from 'lucide-react';
 
 const PaymentHeader: React.FC<{ userName?: string }> = ({ userName }) => (
@@ -110,7 +110,7 @@ const PaymentPage: React.FC = () => {
                     <p className="text-gray-600 mb-6">Para concluir sua inscrição, pague o valor de <strong>R$ 47,90</strong> via PIX.</p>
                     
                     <div className="border-2 border-green-500 rounded-lg p-6 max-w-sm mx-auto bg-green-50">
-                        <QRCodeSVG value={paymentInfo.Pix.QrCodeText} size={200} className="mx-auto" />
+                        <qrcode.QRCodeSVG value={paymentInfo.Pix.QrCodeText} size={200} className="mx-auto" />
                         <p className="font-bold text-lg mt-4">Escaneie o QR Code</p>
                     </div>
 
