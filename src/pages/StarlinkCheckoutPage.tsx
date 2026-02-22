@@ -80,18 +80,15 @@ const StarlinkCheckoutPage: React.FC = () => {
             }
         };
 
-        const { data: customerData, error: upsertError } = await supabase.functions.invoke('upsert-starlink-customer', {
-            body: customerToSave,
-        });
-
-        if (upsertError) {
-            setIsLoading(false);
-            console.error("Erro ao salvar cliente:", upsertError);
-            setError("Ocorreu um erro ao salvar seu cadastro. Por favor, tente novamente.");
-            return;
-        }
-
         try {
+            const { data: customerData, error: upsertError } = await supabase.functions.invoke('upsert-starlink-customer', {
+                body: customerToSave,
+            });
+
+            if (upsertError) {
+                throw new Error("Ocorreu um erro ao salvar seu cadastro. Por favor, tente novamente.");
+            }
+
             const paymentPayload = {
                 amount: 18490, // R$ 184,90
                 customer: {
@@ -113,8 +110,8 @@ const StarlinkCheckoutPage: React.FC = () => {
 
         } catch (err: any) {
             setIsLoading(false);
-            console.error("Erro ao criar pagamento:", err);
-            setError(err.message || "Ocorreu um erro ao gerar o PIX. Tente novamente.");
+            console.error("Erro no processo de checkout:", err);
+            setError(err.message || "Ocorreu um erro. Tente novamente.");
         }
     };
 
