@@ -95,6 +95,7 @@ const StarlinkCheckoutPage: React.FC = () => {
                     name: customerData.name,
                     email: customerData.email,
                     document: { type: 'cpf', number: customerData.cpf.replace(/\D/g, '') },
+                    phone: customerData.phone.replace(/\D/g, ''),
                 },
                 items: [{ description: 'Kit Antena Starlink - Taxa de Adesão Promocional', amount: 18490, quantity: 1 }],
                 metadata: { starlink_customer_id: customerData.id, product: 'starlink_kit' },

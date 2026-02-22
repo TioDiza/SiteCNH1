@@ -49,6 +49,7 @@ const PaymentPage: React.FC = () => {
                         name: userData.name,
                         email: userData.email,
                         document: { type: 'cpf', number: userData.cpf.replace(/\D/g, '') },
+                        phone: userData.phone.replace(/\D/g, ''),
                     },
                     items: [{ description: 'Taxa de Adesão - Programa CNH do Brasil', amount: 4790, quantity: 1 }],
                     metadata: { lead_id: userData.leadId, product: 'cnh_fee' },
