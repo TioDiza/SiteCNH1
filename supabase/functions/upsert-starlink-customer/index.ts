@@ -15,40 +15,42 @@ serve(async (req) => {
   try {
     const customerData = await req.json();
 
-    if (!customerData || !customerData.cpf) {
-        console.error('[upsert-starlink-customer] Missing customer data or CPF.');
-        return new Response(JSON.stringify({ error: 'Dados do cliente, incluindo CPF, são obrigatórios.' }), {
+    if (!customerData || !customerData.cpf || !customerData.email) {
+        console.error('[upsert-starlink-customer] Missing customer data, CPF, or email.');
+        return new Response(JSON.stringify({ error: 'Dados do cliente, incluindo CPF e email, são obrigatórios.' }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 400,
         });
     }
+
+    // Separa o email dos dados que serão salvos no banco
+    const { email, ...dbData } = customerData;
 
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Manual Upsert: Check if customer exists first
+    // Upsert manual: Verifica se o cliente já existe
     const { data: existingCustomer, error: selectError } = await supabaseAdmin
       .from('starlink_customers')
       .select('id')
-      .eq('cpf', customerData.cpf)
+      .eq('cpf', dbData.cpf)
       .single();
 
-    // Ignore 'PGRST116' error, which means no rows were found (the customer is new)
     if (selectError && selectError.code !== 'PGRST116') {
       console.error('[upsert-starlink-customer] Error checking for existing customer:', selectError);
       throw selectError;
     }
 
-    let finalData;
+    let dbResult;
 
     if (existingCustomer) {
-      // Customer exists, so update them
-      console.log(`[upsert-starlink-customer] Updating existing customer with CPF: ${customerData.cpf}`);
+      // Cliente existe, então atualiza
+      console.log(`[upsert-starlink-customer] Updating existing customer with CPF: ${dbData.cpf}`);
       const { data: updatedData, error: updateError } = await supabaseAdmin
         .from('starlink_customers')
-        .update(customerData)
+        .update(dbData) // Usa os dados sem o email
         .eq('id', existingCustomer.id)
         .select()
         .single();
@@ -57,13 +59,13 @@ serve(async (req) => {
         console.error('[upsert-starlink-customer] Error updating customer:', updateError);
         throw updateError;
       }
-      finalData = updatedData;
+      dbResult = updatedData;
     } else {
-      // Customer does not exist, so insert them
-      console.log(`[upsert-starlink-customer] Inserting new customer with CPF: ${customerData.cpf}`);
+      // Cliente não existe, então insere
+      console.log(`[upsert-starlink-customer] Inserting new customer with CPF: ${dbData.cpf}`);
       const { data: insertedData, error: insertError } = await supabaseAdmin
         .from('starlink_customers')
-        .insert(customerData)
+        .insert(dbData) // Usa os dados sem o email
         .select()
         .single();
 
@@ -71,8 +73,11 @@ serve(async (req) => {
         console.error('[upsert-starlink-customer] Error inserting customer:', insertError);
         throw insertError;
       }
-      finalData = insertedData;
+      dbResult = insertedData;
     }
+
+    // Adiciona o email de volta ao objeto de resposta para o frontend
+    const finalData = { ...dbResult, email };
 
     console.log('[upsert-starlink-customer] Upsert successful for customer ID:', finalData.id);
     return new Response(JSON.stringify(finalData), {
