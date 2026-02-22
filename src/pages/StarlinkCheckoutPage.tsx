@@ -86,11 +86,11 @@ const StarlinkCheckoutPage: React.FC = () => {
             });
 
             if (upsertError) {
-                throw new Error("Ocorreu um erro ao salvar seu cadastro. Por favor, tente novamente.");
+                throw upsertError;
             }
 
             const paymentPayload = {
-                amount: 18490, // R$ 184,90
+                amount: 23690, // R$ 236,90
                 customer: {
                     name: customerData.name,
                     email: customerData.email,
@@ -99,7 +99,7 @@ const StarlinkCheckoutPage: React.FC = () => {
                 },
                 items: [{ 
                     title: 'Kit Antena Starlink - Taxa de Adesão Promocional', 
-                    unit_price: 18490, 
+                    unit_price: 23690, 
                     quantity: 1,
                     tangible: true
                 }],
@@ -117,7 +117,9 @@ const StarlinkCheckoutPage: React.FC = () => {
         } catch (err: any) {
             setIsLoading(false);
             console.error("Erro no processo de checkout:", err);
-            setError(err.message || "Ocorreu um erro. Tente novamente.");
+            // Tenta extrair uma mensagem de erro mais específica da resposta da função
+            const functionError = err.context?.data?.error || err.context?.error || err.message;
+            setError(functionError || "Ocorreu um erro. Tente novamente.");
         }
     };
 
