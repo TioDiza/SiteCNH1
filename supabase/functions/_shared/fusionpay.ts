@@ -35,7 +35,16 @@ export async function createFusionPayTransaction(payload: object) {
     body: JSON.stringify(payload),
   });
 
-  const data = await response.json();
+  // Lê a resposta como texto primeiro para evitar erros de parsing de JSON
+  const responseText = await response.text();
+  let data;
+
+  try {
+    data = JSON.parse(responseText);
+  } catch (e) {
+    console.error('[createFusionPayTransaction] Falha ao analisar a resposta JSON da FusionPay. Status:', response.status, 'Texto da Resposta:', responseText);
+    throw new Error('Resposta inválida do provedor de pagamento.');
+  }
 
   if (!response.ok) {
     console.error('[createFusionPayTransaction] Falha ao criar transação na FusionPay:', response.status, data);
