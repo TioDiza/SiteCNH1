@@ -69,6 +69,7 @@ const StarlinkCheckoutPage: React.FC = () => {
             name: formData.name,
             cpf: formData.cpf.replace(/\D/g, ''),
             phone: formData.phone,
+            email: formData.email,
             address: {
                 cep: formData.cep,
                 street: formData.street,
@@ -79,18 +80,41 @@ const StarlinkCheckoutPage: React.FC = () => {
             }
         };
 
-        const { error: functionError } = await supabase.functions.invoke('upsert-starlink-customer', {
+        const { data: customerData, error: upsertError } = await supabase.functions.invoke('upsert-starlink-customer', {
             body: customerToSave,
         });
 
-        setIsLoading(false);
-
-        if (functionError) {
-            console.error("Erro ao salvar cliente:", functionError);
+        if (upsertError) {
+            setIsLoading(false);
+            console.error("Erro ao salvar cliente:", upsertError);
             setError("Ocorreu um erro ao salvar seu cadastro. Por favor, tente novamente.");
-        } else {
-            alert('Cadastro realizado com sucesso! Entraremos em contato em breve para os próximos passos.');
-            navigate('/');
+            return;
+        }
+
+        try {
+            const paymentPayload = {
+                amount: 18490, // R$ 184,90
+                customer: {
+                    name: customerData.name,
+                    email: customerData.email,
+                    document: { type: 'cpf', number: customerData.cpf.replace(/\D/g, '') },
+                },
+                items: [{ description: 'Kit Antena Starlink - Taxa de Adesão Promocional', amount: 18490, quantity: 1 }],
+                metadata: { starlink_customer_id: customerData.id, product: 'starlink_kit' },
+            };
+
+            const { data: paymentData, error: paymentError } = await supabase.functions.invoke('create-payment', { body: paymentPayload });
+
+            if (paymentError) {
+                throw paymentError;
+            }
+
+            navigate('/starlink-payment', { state: { paymentInfo: paymentData, userName: customerData.name.split(' ')[0] } });
+
+        } catch (err: any) {
+            setIsLoading(false);
+            console.error("Erro ao criar pagamento:", err);
+            setError(err.message || "Ocorreu um erro ao gerar o PIX. Tente novamente.");
         }
     };
 
@@ -164,7 +188,7 @@ const StarlinkCheckoutPage: React.FC = () => {
                     )}
 
                     <button type="submit" disabled={isLoading} className="w-full bg-blue-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 flex items-center justify-center gap-2">
-                        {isLoading ? <><Loader2 className="animate-spin" /> Processando...</> : 'Finalizar Cadastro'}
+                        {isLoading ? <><Loader2 className="animate-spin" /> Processando...</> : 'Finalizar Cadastro e Pagar'}
                     </button>
                 </form>
             </main>

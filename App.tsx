@@ -21,6 +21,8 @@ import { AuthProvider } from './src/contexts/AuthContext';
 import ScrollToTop from './src/components/ScrollToTop';
 import StarlinkCheckoutPage from './src/pages/StarlinkCheckoutPage';
 import PaymentPage from './src/pages/PaymentPage';
+import StarlinkPaymentPage from './src/pages/StarlinkPaymentPage';
+import StarlinkThankYouPage from './src/pages/StarlinkThankYouPage';
 
 const App: React.FC = () => {
   return (
@@ -45,6 +47,8 @@ const App: React.FC = () => {
 
         {/* Starlink Routes */}
         <Route path="/starlink-checkout" element={<StarlinkCheckoutPage />} />
+        <Route path="/starlink-payment" element={<StarlinkPaymentPage />} />
+        <Route path="/starlink-thank-you" element={<StarlinkThankYouPage />} />
 
         {/* Admin Routes */}
         <Route element={<AdminAuthRoute />}>
