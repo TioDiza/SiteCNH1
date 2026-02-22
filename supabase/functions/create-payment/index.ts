@@ -41,6 +41,17 @@ serve(async (req) => {
     const fusionResponse = await createFusionPayTransaction(fusionPayload);
     console.log('[create-payment] Received response from FusionPay:', JSON.stringify(fusionResponse, null, 2));
 
+    // The actual transaction data is nested inside a 'data' object.
+    const transactionData = fusionResponse.data;
+
+    if (!transactionData || !transactionData.id || !transactionData.pix || !transactionData.pix.qrcode_text) {
+      console.error('[create-payment] Invalid response structure from FusionPay:', fusionResponse);
+      return new Response(JSON.stringify({ error: 'Resposta inválida do provedor de pagamento.' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 502,
+      });
+    }
+
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -49,11 +60,11 @@ serve(async (req) => {
     const transactionToInsert = {
       lead_id: metadata.lead_id || null,
       starlink_customer_id: metadata.starlink_customer_id || null,
-      gateway_transaction_id: fusionResponse.Id,
-      amount: fusionResponse.Amount,
+      gateway_transaction_id: transactionData.id,
+      amount: transactionData.amount,
       status: 'pending',
       provider: 'fusion_pay',
-      raw_gateway_response: fusionResponse,
+      raw_gateway_response: transactionData,
     };
 
     const { error: dbError } = await supabaseAdmin
@@ -62,14 +73,21 @@ serve(async (req) => {
 
     if (dbError) {
       console.error('[create-payment] Error saving transaction to DB:', dbError);
-      // Mesmo que falhe em salvar no DB, a transação foi criada.
-      // É importante retornar o sucesso para o cliente não tentar pagar de novo.
-      // O erro será logado para análise.
+      // Log the error but continue, so the user can pay.
     } else {
         console.log('[create-payment] Transaction saved to DB successfully.');
     }
 
-    return new Response(JSON.stringify(fusionResponse), {
+    // Transform the response to match the format expected by the frontend (PascalCase)
+    const responseForFrontend = {
+        Id: transactionData.id,
+        Amount: transactionData.amount,
+        Pix: {
+            QrCodeText: transactionData.pix.qrcode_text,
+        },
+    };
+
+    return new Response(JSON.stringify(responseForFrontend), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
