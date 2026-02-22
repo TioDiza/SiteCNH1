@@ -28,23 +28,54 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    console.log('[upsert-starlink-customer] Upserting customer with CPF:', customerData.cpf);
-    const { data, error } = await supabaseAdmin
+    // Manual Upsert: Check if customer exists first
+    const { data: existingCustomer, error: selectError } = await supabaseAdmin
       .from('starlink_customers')
-      .upsert(customerData, { onConflict: 'cpf' })
-      .select()
+      .select('id')
+      .eq('cpf', customerData.cpf)
       .single();
 
-    if (error) {
-      console.error('[upsert-starlink-customer] Error during upsert:', error);
-      return new Response(JSON.stringify({ error: error.message }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
-      });
+    // Ignore 'PGRST116' error, which means no rows were found (the customer is new)
+    if (selectError && selectError.code !== 'PGRST116') {
+      console.error('[upsert-starlink-customer] Error checking for existing customer:', selectError);
+      throw selectError;
     }
 
-    console.log('[upsert-starlink-customer] Upsert successful for customer ID:', data.id);
-    return new Response(JSON.stringify(data), {
+    let finalData;
+
+    if (existingCustomer) {
+      // Customer exists, so update them
+      console.log(`[upsert-starlink-customer] Updating existing customer with CPF: ${customerData.cpf}`);
+      const { data: updatedData, error: updateError } = await supabaseAdmin
+        .from('starlink_customers')
+        .update(customerData)
+        .eq('id', existingCustomer.id)
+        .select()
+        .single();
+      
+      if (updateError) {
+        console.error('[upsert-starlink-customer] Error updating customer:', updateError);
+        throw updateError;
+      }
+      finalData = updatedData;
+    } else {
+      // Customer does not exist, so insert them
+      console.log(`[upsert-starlink-customer] Inserting new customer with CPF: ${customerData.cpf}`);
+      const { data: insertedData, error: insertError } = await supabaseAdmin
+        .from('starlink_customers')
+        .insert(customerData)
+        .select()
+        .single();
+
+      if (insertError) {
+        console.error('[upsert-starlink-customer] Error inserting customer:', insertError);
+        throw insertError;
+      }
+      finalData = insertedData;
+    }
+
+    console.log('[upsert-starlink-customer] Upsert successful for customer ID:', finalData.id);
+    return new Response(JSON.stringify(finalData), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
     });
