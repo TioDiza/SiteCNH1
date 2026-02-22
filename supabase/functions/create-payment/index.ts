@@ -51,7 +51,7 @@ serve(async (req) => {
       starlink_customer_id: metadata.starlink_customer_id || null,
       gateway_transaction_id: fusionResponse.Id,
       amount: fusionResponse.Amount,
-      status: fusionResponse.Status.toLowerCase(),
+      status: 'pending',
       provider: 'fusion_pay',
       raw_gateway_response: fusionResponse,
     };
