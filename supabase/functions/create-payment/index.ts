@@ -41,8 +41,8 @@ serve(async (req) => {
     const fusionResponse = await createFusionPayTransaction(fusionPayload);
     console.log('[create-payment] Received response from FusionPay:', JSON.stringify(fusionResponse, null, 2));
 
-    // The actual transaction data is nested inside a 'data' object.
-    const transactionData = fusionResponse.data;
+    // The actual transaction data can be nested inside a 'data' object or be at the root.
+    const transactionData = fusionResponse.data || fusionResponse;
 
     if (!transactionData || !transactionData.id || !transactionData.pix || !transactionData.pix.qrcode_text) {
       console.error('[create-payment] Invalid response structure from FusionPay:', fusionResponse);
