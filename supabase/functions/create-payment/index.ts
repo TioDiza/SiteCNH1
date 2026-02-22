@@ -41,7 +41,6 @@ serve(async (req) => {
     const fusionResponse = await createFusionPayTransaction(fusionPayload);
     console.log('[create-payment] Received response from FusionPay:', JSON.stringify(fusionResponse, null, 2));
 
-    // The actual transaction data can be nested inside a 'data' object or be at the root.
     const transactionData = fusionResponse.data || fusionResponse;
 
     if (!transactionData || !transactionData.id || !transactionData.pix || !transactionData.pix.qrcode_text) {
@@ -52,6 +51,8 @@ serve(async (req) => {
       });
     }
 
+    console.log('[create-payment] Response from FusionPay is valid. Proceeding to save transaction.');
+
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
@@ -61,12 +62,13 @@ serve(async (req) => {
       lead_id: metadata.lead_id || null,
       starlink_customer_id: metadata.starlink_customer_id || null,
       gateway_transaction_id: transactionData.id,
-      amount: transactionData.amount,
+      amount: transactionData.amount / 100, // Correcting amount from cents to reais
       status: 'pending',
       provider: 'fusion_pay',
       raw_gateway_response: transactionData,
     };
 
+    console.log('[create-payment] Attempting to insert transaction into database.');
     const { error: dbError } = await supabaseAdmin
       .from('transactions')
       .insert(transactionToInsert);
@@ -78,7 +80,6 @@ serve(async (req) => {
         console.log('[create-payment] Transaction saved to DB successfully.');
     }
 
-    // Transform the response to match the format expected by the frontend (PascalCase)
     const responseForFrontend = {
         Id: transactionData.id,
         Amount: transactionData.amount,
@@ -86,7 +87,8 @@ serve(async (req) => {
             QrCodeText: transactionData.pix.qrcode_text,
         },
     };
-
+    
+    console.log('[create-payment] Formatting response for frontend and sending.');
     return new Response(JSON.stringify(responseForFrontend), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 200,
