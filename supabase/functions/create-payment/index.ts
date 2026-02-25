@@ -26,11 +26,14 @@ serve(async (req) => {
     }
 
     const fusionPayload = {
-      amount,
+      amount: amount / 100, // Convertendo de centavos para Reais
       payment_method: 'pix',
       postback_url: WEBHOOK_URL,
       customer,
-      items,
+      items: items.map((item: any) => ({
+        ...item,
+        unit_price: item.unit_price / 100, // Convertendo também o preço do item
+      })),
       pix: {
         expires_in_days: 1,
       },
@@ -65,14 +68,13 @@ serve(async (req) => {
       amount: transactionData.amount,
       status: 'pending',
       provider: 'fusion_pay',
-      // raw_gateway_response will be added by the webhook
     };
 
     console.log('[create-payment] Attempting to insert transaction into database with data:', JSON.stringify(transactionToInsert));
     const { data: insertedTransaction, error: dbError } = await supabaseAdmin
       .from('transactions')
       .insert(transactionToInsert)
-      .select('id') // Only select id to confirm insertion
+      .select('id')
       .single();
 
     if (dbError || !insertedTransaction) {
