@@ -113,17 +113,10 @@ const PaymentPage: React.FC = () => {
             return (
                 <div className="text-center">
                     <h1 className="text-2xl font-bold text-gray-800 mb-2">Pague a taxa de adesão para continuar</h1>
-                    <p className="text-gray-600 mb-6">Para concluir sua inscrição, pague o valor de <strong>R$ 47,90</strong> via PIX.</p>
+                    <p className="text-gray-600 mb-8">Para concluir sua inscrição, pague o valor de <strong>R$ 47,90</strong> via PIX.</p>
                     
-                    <div className="border-2 border-green-500 rounded-lg p-6 max-w-sm mx-auto bg-green-50">
-                        <qrcode.QRCodeSVG value={paymentInfo.Pix.QrCodeText} size={200} className="mx-auto" />
-                        <p className="font-bold text-lg mt-4">Escaneie o QR Code</p>
-                    </div>
-
-                    <p className="my-4 font-semibold text-gray-500">ou</p>
-
                     <div className="space-y-4">
-                        <p className="font-semibold text-gray-700">Copie o código e pague no seu app do banco:</p>
+                        <p className="font-semibold text-gray-700 text-xl">Copie o código e pague no seu app do banco:</p>
                         <div className="relative">
                             <input type="text" readOnly value={paymentInfo.Pix.QrCodeText} className="w-full bg-gray-100 border border-gray-300 rounded-lg p-3 pr-12 text-sm text-gray-600" />
                             <button onClick={handleCopy} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-500 hover:bg-gray-200 rounded-full">
