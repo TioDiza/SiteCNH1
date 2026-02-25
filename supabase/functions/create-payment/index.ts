@@ -62,25 +62,25 @@ serve(async (req) => {
       lead_id: metadata.lead_id || null,
       starlink_customer_id: metadata.starlink_customer_id || null,
       gateway_transaction_id: transactionData.id,
-      // The webhook shows the amount is returned in BRL (e.g., 236.9), not cents.
-      // We will assume the creation response does the same, despite the documentation.
       amount: transactionData.amount,
       status: 'pending',
       provider: 'fusion_pay',
       raw_gateway_response: transactionData,
     };
 
-    console.log('[create-payment] Attempting to insert transaction into database.');
-    const { error: dbError } = await supabaseAdmin
+    console.log('[create-payment] Attempting to insert transaction into database with data:', JSON.stringify(transactionToInsert));
+    const { data: insertedTransaction, error: dbError } = await supabaseAdmin
       .from('transactions')
-      .insert(transactionToInsert);
+      .insert(transactionToInsert)
+      .select()
+      .single();
 
-    if (dbError) {
+    if (dbError || !insertedTransaction) {
       console.error('[create-payment] Error saving transaction to DB:', dbError);
-      // This was failing silently. Now it will throw a proper error.
-      throw new Error('Falha ao registrar a transação antes de prosseguir para o pagamento. Por favor, tente novamente.');
+      console.error('[create-payment] Data that failed to insert:', JSON.stringify(transactionToInsert));
+      throw new Error('Falha ao registrar a transação. Por favor, tente novamente.');
     } else {
-        console.log('[create-payment] Transaction saved to DB successfully.');
+        console.log('[create-payment] Transaction saved to DB successfully. Inserted data:', JSON.stringify(insertedTransaction));
     }
 
     const responseForFrontend = {
