@@ -25,15 +25,13 @@ serve(async (req) => {
       });
     }
 
+    // A API da FusionPay espera os valores em centavos, então enviamos como recebido do frontend.
     const fusionPayload = {
-      amount: amount / 100, // Convertendo de centavos para Reais
+      amount,
       payment_method: 'pix',
       postback_url: WEBHOOK_URL,
       customer,
-      items: items.map((item: any) => ({
-        ...item,
-        unit_price: item.unit_price / 100, // Convertendo também o preço do item
-      })),
+      items,
       pix: {
         expires_in_days: 1,
       },
@@ -65,7 +63,7 @@ serve(async (req) => {
       lead_id: metadata.lead_id || null,
       starlink_customer_id: metadata.starlink_customer_id || null,
       gateway_transaction_id: transactionData.id,
-      amount: transactionData.amount,
+      amount: transactionData.amount, // A resposta da API vem em Reais, que é o formato correto para o banco.
       status: 'pending',
       provider: 'fusion_pay',
     };
