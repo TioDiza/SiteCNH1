@@ -62,7 +62,9 @@ serve(async (req) => {
       lead_id: metadata.lead_id || null,
       starlink_customer_id: metadata.starlink_customer_id || null,
       gateway_transaction_id: transactionData.id,
-      amount: transactionData.amount / 100, // Correcting amount from cents to reais
+      // The webhook shows the amount is returned in BRL (e.g., 236.9), not cents.
+      // We will assume the creation response does the same, despite the documentation.
+      amount: transactionData.amount,
       status: 'pending',
       provider: 'fusion_pay',
       raw_gateway_response: transactionData,
@@ -75,7 +77,8 @@ serve(async (req) => {
 
     if (dbError) {
       console.error('[create-payment] Error saving transaction to DB:', dbError);
-      // Log the error but continue, so the user can pay.
+      // This was failing silently. Now it will throw a proper error.
+      throw new Error('Falha ao registrar a transação antes de prosseguir para o pagamento. Por favor, tente novamente.');
     } else {
         console.log('[create-payment] Transaction saved to DB successfully.');
     }
