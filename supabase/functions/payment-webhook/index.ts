@@ -48,7 +48,7 @@ serve(async (req) => {
       .from('transactions')
       .update({
         status: newStatus.toLowerCase(),
-        raw_gateway_response: webhookData,
+        raw_gateway_response: webhookData, // Now we save the full response here
       })
       .eq('gateway_transaction_id', gatewayTransactionId)
       .select('*, leads(email, phone), starlink_customers(id)') // Select related data for Meta event

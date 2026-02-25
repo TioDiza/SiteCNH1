@@ -65,14 +65,14 @@ serve(async (req) => {
       amount: transactionData.amount,
       status: 'pending',
       provider: 'fusion_pay',
-      raw_gateway_response: transactionData,
+      // raw_gateway_response will be added by the webhook
     };
 
     console.log('[create-payment] Attempting to insert transaction into database with data:', JSON.stringify(transactionToInsert));
     const { data: insertedTransaction, error: dbError } = await supabaseAdmin
       .from('transactions')
       .insert(transactionToInsert)
-      .select()
+      .select('id') // Only select id to confirm insertion
       .single();
 
     if (dbError || !insertedTransaction) {
@@ -80,7 +80,7 @@ serve(async (req) => {
       console.error('[create-payment] Data that failed to insert:', JSON.stringify(transactionToInsert));
       throw new Error('Falha ao registrar a transação. Por favor, tente novamente.');
     } else {
-        console.log('[create-payment] Transaction saved to DB successfully. Inserted data:', JSON.stringify(insertedTransaction));
+        console.log(`[create-payment] Transaction saved to DB successfully. Internal ID: ${insertedTransaction.id}`);
     }
 
     const responseForFrontend = {
