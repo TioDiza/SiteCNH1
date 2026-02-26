@@ -26,12 +26,10 @@ const PaymentPage: React.FC = () => {
     const [companyInfo, setCompanyInfo] = useState<any>(null);
     const [isCopied, setIsCopied] = useState(false);
     const [userName, setUserName] = useState('');
-    const [amountInCents, setAmountInCents] = useState(0);
+
+    const PAYMENT_AMOUNT_IN_CENTS = 9700; // R$ 97,00
 
     useEffect(() => {
-        const randomAmount = Math.floor(Math.random() * 51) + 50; // Gera um valor entre 50 e 100 centavos
-        setAmountInCents(randomAmount);
-
         const createPayment = async () => {
             const userDataString = sessionStorage.getItem('cnh_userData');
             if (!userDataString) {
@@ -48,7 +46,7 @@ const PaymentPage: React.FC = () => {
                 setCompanyInfo(companyData);
 
                 const payload = {
-                    amount: randomAmount,
+                    amount: PAYMENT_AMOUNT_IN_CENTS,
                     customer: {
                         name: userData.name,
                         email: userData.email,
@@ -56,8 +54,8 @@ const PaymentPage: React.FC = () => {
                         phone: userData.phone.replace(/\D/g, ''),
                     },
                     items: [{ 
-                        title: 'Taxa de Adesão - Programa CNH do Brasil (TESTE)', 
-                        unit_price: randomAmount, 
+                        title: 'Taxa de Adesão - Programa CNH do Brasil', 
+                        unit_price: PAYMENT_AMOUNT_IN_CENTS, 
                         quantity: 1,
                         tangible: false
                     }],
@@ -116,7 +114,7 @@ const PaymentPage: React.FC = () => {
             return <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md flex items-center gap-3"><AlertTriangle size={20} /> <p>{error}</p></div>;
         }
         if (paymentInfo && companyInfo) {
-            const amountInReais = (amountInCents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            const amountInReais = (PAYMENT_AMOUNT_IN_CENTS / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
             return (
                 <div className="text-center">
                     <h1 className="text-3xl font-bold text-gray-800 mb-2">Taxa de Emissão da CNH</h1>
