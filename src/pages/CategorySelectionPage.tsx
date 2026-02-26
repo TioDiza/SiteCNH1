@@ -413,7 +413,7 @@ const CategorySelectionPage: React.FC = () => {
         }
         sessionStorage.setItem('cnh_selectedCategory', selectedCategory);
         sessionStorage.setItem('cnh_selectedMonth', selectedMonth);
-        navigate('/payment');
+        navigate('/pre-payment-info');
     };
 
     const renderUserActions = () => {

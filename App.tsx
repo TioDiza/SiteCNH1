@@ -6,6 +6,7 @@ import ConfirmationPage from './src/pages/ConfirmationPage';
 import QuizPage from './src/pages/QuizPage';
 import ContactInfoPage from './src/pages/ContactInfoPage';
 import EligibilityPage from './src/pages/EligibilityPage';
+import PrePaymentInfoPage from './src/pages/PrePaymentInfoPage';
 import ThankYouPage from './src/pages/ThankYouPage';
 import AppAccessPage from './src/pages/AppAccessPage';
 import TheoreticalClassesPage from './src/pages/TheoreticalClassesPage';
@@ -42,6 +43,7 @@ const App: React.FC = () => {
         <Route path="/detran-fee" element={<DetranFeePage />} />
         <Route path="/verification" element={<VerificationPage />} />
         <Route path="/category-selection" element={<CategorySelectionPage />} />
+        <Route path="/pre-payment-info" element={<PrePaymentInfoPage />} />
         <Route path="/payment" element={<PaymentPage />} />
         <Route path="/thank-you" element={<ThankYouPage />} />
 
