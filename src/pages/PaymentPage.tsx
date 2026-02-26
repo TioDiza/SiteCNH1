@@ -27,7 +27,7 @@ const PaymentPage: React.FC = () => {
     const [isCopied, setIsCopied] = useState(false);
     const [userName, setUserName] = useState('');
 
-    const PAYMENT_AMOUNT_IN_CENTS = 9700; // R$ 97,00
+    const PAYMENT_AMOUNT_IN_CENTS = 4790; // R$ 47,90
 
     useEffect(() => {
         const createPayment = async () => {
