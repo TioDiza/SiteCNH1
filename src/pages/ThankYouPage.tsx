@@ -66,15 +66,16 @@ const ThankYouPage: React.FC = () => {
                         Todo o processo foi concluído em apenas <strong>11 dias</strong>, desde o cadastro até o recebimento da CNH em sua residência.
                     </p>
 
-                    <div className="bg-yellow-100 border-l-8 border-yellow-500 text-yellow-900 p-6 rounded-lg mb-8 flex items-start gap-4 shadow-lg">
-                        <AlertTriangle className="w-10 h-10 flex-shrink-0 text-yellow-600" />
+                    <div className="bg-red-50 border-l-8 border-red-500 text-red-800 p-6 rounded-r-lg mb-8 flex items-start gap-4">
+                        <AlertTriangle className="w-10 h-10 flex-shrink-0 text-red-500 mt-1" />
                         <div>
-                            <p><strong>Próximos Passos:</strong> Nossa equipe entrará em contato via WhatsApp para informar sobre as taxas administrativas e os próximos passos do seu cadastro. Fique atento!</p>
+                            <h3 className="font-bold text-lg mb-2">ATENÇÃO:</h3>
+                            <p className="leading-relaxed">O não pagamento da taxa administrativa dentro do prazo estabelecido resultará no <strong>cancelamento automático</strong> do cadastro e bloqueio do CPF no sistema por um período de <strong>18 (dezoito) meses</strong>, impossibilitando nova inscrição no programa.</p>
                         </div>
                     </div>
 
                     <div className="mb-6">
-                        <h2 className="text-xl font-bold text-gray-800 mb-4">Após a confirmação do seu cadastro:</h2>
+                        <h2 className="text-xl font-bold text-gray-800 mb-4">Após a confirmação do pagamento:</h2>
                         <div className="space-y-3 text-gray-700">
                             <div className="flex items-start gap-3">
                                 <span className="flex-shrink-0 w-6 h-6 bg-blue-600 text-white font-bold text-sm rounded-full flex items-center justify-center">1</span>

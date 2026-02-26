@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../integrations/supabase/client';
 import { QRCodeSVG } from 'qrcode.react';
-import { User, Loader2, AlertTriangle, Copy, CheckCircle, Clock } from 'lucide-react';
+import { User, Loader2, AlertTriangle, Copy, CheckCircle, Clock, Info, Smartphone } from 'lucide-react';
 
 const PaymentHeader: React.FC<{ userName?: string }> = ({ userName }) => (
     <header className="bg-white border-b border-gray-200">
@@ -114,9 +114,38 @@ const PaymentPage: React.FC = () => {
         if (paymentInfo && companyInfo) {
             return (
                 <div className="text-center">
-                    <h1 className="text-2xl font-bold text-gray-800 mb-2">Pague a taxa de adesão para continuar</h1>
-                    <p className="text-gray-600 mb-6">Para concluir sua inscrição, pague o valor de <strong>R$ 47,90</strong> via PIX.</p>
+                    <h1 className="text-3xl font-bold text-gray-800 mb-2">Taxa de Emissão da CNH</h1>
+                    <p className="text-gray-600 mb-6 max-w-md mx-auto">Esta é a última taxa obrigatória. Após a confirmação do pagamento, você receberá acesso completo ao aplicativo do Programa CNH do Brasil.</p>
                     
+                    <div className="my-8 flex justify-center">
+                        <div className="p-4 bg-blue-100 rounded-full">
+                            <Smartphone size={40} className="text-blue-600" />
+                        </div>
+                    </div>
+
+                    <div className="bg-blue-50 border border-blue-200 text-left p-4 rounded-lg mb-6 space-y-2">
+                        <div className="flex items-center gap-2 font-bold text-blue-800">
+                            <Info size={20} />
+                            <h3>Importante</h3>
+                        </div>
+                        <ul className="list-disc list-inside text-blue-900 text-sm space-y-1">
+                            <li>Esta taxa é <strong>obrigatória</strong> para finalizar seu cadastro no Programa CNH do Brasil</li>
+                            <li>Valor único pago uma única vez</li>
+                            <li>Taxa destinada ao processo de emissão e regularização da CNH</li>
+                            <li>Seu cadastro só será concluído após a confirmação deste pagamento</li>
+                        </ul>
+                    </div>
+
+                    <div className="bg-red-50 border border-red-200 text-left p-4 rounded-lg mb-8">
+                         <div className="flex items-center gap-2 font-bold text-red-800">
+                            <AlertTriangle size={20} />
+                            <h3>Atenção</h3>
+                        </div>
+                        <p className="text-red-900 text-sm mt-2">
+                            Informamos que, caso o pagamento da <strong>Taxa de Emissão da CNH</strong> não seja realizado, seu cadastro <strong>não será concluído</strong> e você <strong>perderá o direito de participar do Programa CNH do Brasil</strong>. Conforme o art. 49, §2º da Lei nº 8.078/1990 (Código de Defesa do Consumidor), não haverá reembolso do valor já pago referente às taxas.
+                        </p>
+                    </div>
+
                     <div className="flex justify-center mb-6">
                         <QRCodeSVG
                             value={paymentInfo.Pix.QrCodeText}
@@ -129,7 +158,7 @@ const PaymentPage: React.FC = () => {
                     </div>
 
                     <div className="space-y-4">
-                        <p className="font-semibold text-gray-700 text-lg">Ou copie o código e pague no seu app do banco:</p>
+                        <p className="font-semibold text-gray-700 text-lg">Pague o valor de <strong>R$ 47,90</strong> via PIX:</p>
                         <div className="relative">
                             <input type="text" readOnly value={paymentInfo.Pix.QrCodeText} className="w-full bg-gray-100 border border-gray-300 rounded-lg p-3 pr-12 text-sm text-gray-600" />
                             <button onClick={handleCopy} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-500 hover:bg-gray-200 rounded-full">

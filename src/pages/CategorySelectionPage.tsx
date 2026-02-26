@@ -450,7 +450,7 @@ const CategorySelectionPage: React.FC = () => {
             case 6:
                  return (
                     <div className="mt-4 animate-fade-in">
-                        <button onClick={handleNavigateToPayment} className="w-full bg-green-600 text-white px-8 py-3 rounded-lg font-bold text-lg hover:bg-green-700 transition-all shadow-md active:scale-95 text-center">Gerar Guia de Pagamento PIX</button>
+                        <button onClick={handleNavigateToPayment} className="w-full bg-[#004381] text-white px-8 py-3 rounded-lg font-bold text-lg hover:bg-blue-900 transition-all shadow-md active:scale-95 text-center">Prosseguir</button>
                     </div>
                 );
             default:
