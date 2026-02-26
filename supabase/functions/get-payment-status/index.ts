@@ -25,7 +25,13 @@ serve(async (req) => {
     }
 
     const furiaTransaction = await getFuriaPayTransaction(gatewayTransactionId);
-    const newStatus = furiaTransaction.status.toLowerCase();
+    
+    if (!furiaTransaction || !furiaTransaction.data || !furiaTransaction.data.status) {
+        console.error('[get-payment-status] Invalid response from FuriaPay:', furiaTransaction);
+        throw new Error('Resposta inválida do provedor de pagamento.');
+    }
+    
+    const newStatus = furiaTransaction.data.status.toLowerCase();
 
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -34,7 +40,7 @@ serve(async (req) => {
 
     const { data: ourTransaction, error: fetchError } = await supabaseAdmin
       .from('transactions')
-      .select('*, leads(email, phone)')
+      .select('*, leads(email, phone), starlink_customers(phone)')
       .eq('gateway_transaction_id', gatewayTransactionId)
       .single();
 
@@ -54,14 +60,17 @@ serve(async (req) => {
       if (!ourTransaction.meta_event_sent) {
         console.log(`[get-payment-status] Processing Meta event for transaction ${ourTransaction.id}.`);
         const userDataForMeta: { em?: string; ph?: string } = {};
+        
         if (ourTransaction.leads) {
           userDataForMeta.em = ourTransaction.leads.email?.toLowerCase();
           userDataForMeta.ph = ourTransaction.leads.phone?.replace(/\D/g, '');
+        } else if (ourTransaction.starlink_customers) {
+          // Starlink customers don't have an email in the DB, so we only send the phone
+          userDataForMeta.ph = ourTransaction.starlink_customers.phone?.replace(/\D/g, '');
         }
         
         const eventId = ourTransaction.id;
-        // O valor da API vem em centavos, convertemos para Reais para o evento da Meta
-        const amountInReais = furiaTransaction.amount / 100;
+        const amountInReais = furiaTransaction.data.amount / 100;
 
         await sendMetaPurchaseEvent(
           amountInReais,
