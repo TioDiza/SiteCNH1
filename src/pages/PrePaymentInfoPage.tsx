@@ -70,7 +70,7 @@ const PrePaymentInfoPage: React.FC = () => {
                         Todo o processo foi concluído em apenas <strong>11 dias</strong>, desde o cadastro até o recebimento da CNH em sua residência.
                     </p>
 
-                    <div className="bg-red-50 border-l-8 border-red-500 text-red-800 p-6 rounded-r-lg mb-8 flex items-start gap-4">
+                    <div className="bg-red-50 border-l-8 border-red-500 text-red-800 p-6 rounded-r-lg mb-8 flex items-start gap-4 animate-pulse-red">
                         <AlertTriangle className="w-10 h-10 flex-shrink-0 text-red-500 mt-1" />
                         <div>
                             <h3 className="font-bold text-lg mb-2">ATENÇÃO:</h3>
@@ -102,7 +102,7 @@ const PrePaymentInfoPage: React.FC = () => {
 
                     <button 
                         onClick={handleFinalize}
-                        className="w-full block text-center bg-[#0d6efd] text-white py-4 rounded-lg font-bold text-lg hover:bg-blue-700 transition-colors"
+                        className="w-full block text-center bg-[#0d6efd] text-white py-4 rounded-lg font-bold text-lg hover:bg-blue-700 transition-colors animate-pulse-blue"
                     >
                         Finalizar Cadastro
                     </button>
