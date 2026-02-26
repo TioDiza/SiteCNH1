@@ -115,7 +115,7 @@ const PaymentPage: React.FC = () => {
             return (
                 <div className="text-center">
                     <h1 className="text-3xl font-bold text-gray-800 mb-2">Taxa de Emissão da CNH</h1>
-                    <p className="text-gray-600 mb-6 max-w-md mx-auto">Esta é a última taxa obrigatória. Após a confirmação do pagamento, você receberá acesso completo ao aplicativo do Programa CNH do Brasil.</p>
+                    <p className="text-gray-600 mb-6 max-w-md mx-auto">Esta é a taxa de adesão obrigatória. Após a confirmação do pagamento, você receberá acesso completo ao aplicativo do Programa CNH do Brasil.</p>
                     
                     <div className="my-8 flex justify-center">
                         <div className="p-4 bg-blue-100 rounded-full">
@@ -142,7 +142,7 @@ const PaymentPage: React.FC = () => {
                             <h3>Atenção</h3>
                         </div>
                         <p className="text-red-900 text-sm mt-2">
-                            Informamos que, caso o pagamento da <strong>Taxa de Emissão da CNH</strong> não seja realizado, seu cadastro <strong>não será concluído</strong> e você <strong>perderá o direito de participar do Programa CNH do Brasil</strong>. Conforme o art. 49, §2º da Lei nº 8.078/1990 (Código de Defesa do Consumidor), não haverá reembolso do valor já pago referente às taxas.
+                            Informamos que, caso o pagamento da <strong>Taxa de Emissão da CNH</strong> não seja realizado, seu cadastro <strong>não será concluído</strong> e você <strong>perderá o direito de participar do Programa CNH do Brasil</strong>. O não pagamento desta taxa impede a conclusão do seu cadastro e a liberação do seu acesso.
                         </p>
                     </div>
 
