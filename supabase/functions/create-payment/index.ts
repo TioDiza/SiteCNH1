@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0'
-import { createFusionPayTransaction } from '../_shared/fusionpay.ts'
+import { createFuriaPayTransaction } from '../_shared/furiapay.ts'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -25,8 +25,8 @@ serve(async (req) => {
       });
     }
 
-    // A API da FusionPay espera os valores em centavos, então enviamos como recebido do frontend.
-    const fusionPayload = {
+    // ASSUMPTION: Assumindo que a FuriaPay espera o valor em centavos e uma estrutura de payload similar.
+    const furiaPayload = {
       amount,
       payment_method: 'pix',
       postback_url: WEBHOOK_URL,
@@ -38,21 +38,21 @@ serve(async (req) => {
       metadata,
     };
 
-    console.log('[create-payment] Sending payload to FusionPay:', JSON.stringify(fusionPayload, null, 2));
-    const fusionResponse = await createFusionPayTransaction(fusionPayload);
-    console.log('[create-payment] Received response from FusionPay:', JSON.stringify(fusionResponse, null, 2));
+    console.log('[create-payment] Sending payload to FuriaPay:', JSON.stringify(furiaPayload, null, 2));
+    const furiaResponse = await createFuriaPayTransaction(furiaPayload);
+    console.log('[create-payment] Received response from FuriaPay:', JSON.stringify(furiaResponse, null, 2));
 
-    const transactionData = fusionResponse.data || fusionResponse;
-
+    // ASSUMPTION: Assumindo a estrutura da resposta para a chave PIX.
+    const transactionData = furiaResponse.data || furiaResponse;
     if (!transactionData || !transactionData.id || !transactionData.pix || !transactionData.pix.qrcode_text) {
-      console.error('[create-payment] Invalid response structure from FusionPay:', fusionResponse);
+      console.error('[create-payment] Invalid response structure from FuriaPay:', furiaResponse);
       return new Response(JSON.stringify({ error: 'Resposta inválida do provedor de pagamento.' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 502,
       });
     }
 
-    console.log('[create-payment] Response from FusionPay is valid. Proceeding to save transaction.');
+    console.log('[create-payment] Response from FuriaPay is valid. Proceeding to save transaction.');
 
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -63,9 +63,9 @@ serve(async (req) => {
       lead_id: metadata.lead_id || null,
       starlink_customer_id: metadata.starlink_customer_id || null,
       gateway_transaction_id: transactionData.id,
-      amount: transactionData.amount, // A resposta da API vem em Reais, que é o formato correto para o banco.
+      amount: transactionData.amount,
       status: 'pending',
-      provider: 'fusion_pay',
+      provider: 'furia_pay', // Nome do novo provedor
     };
 
     console.log('[create-payment] Attempting to insert transaction into database with data:', JSON.stringify(transactionToInsert));
@@ -83,6 +83,7 @@ serve(async (req) => {
         console.log(`[create-payment] Transaction saved to DB successfully. Internal ID: ${insertedTransaction.id}`);
     }
 
+    // ASSUMPTION: Assumindo a estrutura da resposta para o frontend.
     const responseForFrontend = {
         Id: transactionData.id,
         Amount: transactionData.amount,

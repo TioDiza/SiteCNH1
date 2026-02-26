@@ -16,21 +16,13 @@ serve(async (req) => {
 
   try {
     const webhookData = await req.json();
-    console.log('[payment-webhook] Received webhook data:', JSON.stringify(webhookData, null, 2));
+    console.log('[payment-webhook] Received webhook data from FuriaPay:', JSON.stringify(webhookData, null, 2));
 
-    // We are only interested in transaction updates for now.
-    if (!webhookData.PaymentMethod) {
-        console.log('[payment-webhook] Webhook is not a transaction update. Ignoring.');
-        return new Response(JSON.stringify({ message: 'Webhook ignored: Not a transaction update.' }), {
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 200,
-        });
-    }
-
-    const { Id: gatewayTransactionId, Status: newStatus, Amount: amount } = webhookData;
+    // ASSUMPTION: Assumindo que o payload do webhook contém 'id', 'status' e 'amount'.
+    const { id: gatewayTransactionId, status: newStatus, amount } = webhookData;
 
     if (!gatewayTransactionId || !newStatus) {
-        console.error('[payment-webhook] Missing Id or Status in webhook payload.');
+        console.error('[payment-webhook] Missing id or status in FuriaPay webhook payload.');
         return new Response(JSON.stringify({ error: 'Missing required fields in webhook payload.' }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' },
             status: 400,
@@ -48,10 +40,10 @@ serve(async (req) => {
       .from('transactions')
       .update({
         status: newStatus.toLowerCase(),
-        raw_gateway_response: webhookData, // Now we save the full response here
+        raw_gateway_response: webhookData,
       })
       .eq('gateway_transaction_id', gatewayTransactionId)
-      .select('*, leads(email, phone), starlink_customers(id)') // Select related data for Meta event
+      .select('*, leads(email, phone), starlink_customers(id)')
       .single();
 
     if (updateError) {
@@ -71,7 +63,8 @@ serve(async (req) => {
 
     console.log(`[payment-webhook] Successfully updated transaction ${updatedTransaction.id} to status '${newStatus}'.`);
 
-    if (newStatus.toUpperCase() === 'PAID' && !updatedTransaction.meta_event_sent) {
+    // ASSUMPTION: Assumindo que o status de pago é 'paid'.
+    if (newStatus.toLowerCase() === 'paid' && !updatedTransaction.meta_event_sent) {
       console.log(`[payment-webhook] Processing PAID event for transaction ${updatedTransaction.id}.`);
       
       const userDataForMeta: { em?: string; ph?: string } = {};
@@ -83,6 +76,7 @@ serve(async (req) => {
 
       const eventId = updatedTransaction.id;
 
+      // ASSUMPTION: Assumindo que o valor no webhook vem em Reais.
       await sendMetaPurchaseEvent(
         amount,
         'BRL',
