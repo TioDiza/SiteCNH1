@@ -41,9 +41,9 @@ serve(async (req) => {
     const furiaResponse = await createFuriaPayTransaction(furiaPayload);
     console.log('[create-payment] Received response from FuriaPay:', JSON.stringify(furiaResponse, null, 2));
 
-    // A resposta da FuriaPay vem em { data: [ { ... } ] }
-    const transactionData = furiaResponse.data && furiaResponse.data[0];
-    const pixData = transactionData && transactionData.pix && transactionData.pix[0];
+    // A resposta da FuriaPay vem em { data: { ... } }
+    const transactionData = furiaResponse.data;
+    const pixData = transactionData && transactionData.pix;
 
     if (!transactionData || !transactionData.id || !pixData || !pixData.qr_code) {
       console.error('[create-payment] Invalid response structure from FuriaPay:', furiaResponse);
