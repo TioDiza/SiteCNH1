@@ -90,7 +90,7 @@ const PaymentPage: React.FC = () => {
                     console.error('Error polling transaction status:', functionError);
                 } else if (data && data.status === 'paid') {
                     clearInterval(interval);
-                    navigate('/thank-you');
+                    navigate('/phone-confirmation');
                 }
             } catch (e) {
                 console.error('Error invoking get-payment-status function:', e);
