@@ -95,7 +95,8 @@ const StarlinkPaymentPage: React.FC = () => {
             return <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md flex items-center gap-3"><AlertTriangle size={20} /> <p>{error}</p></div>;
         }
         if (paymentInfo && companyInfo) {
-            const amountInReais = (paymentInfo.Amount / 100).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+            // O valor agora vem em Reais, então formatamos diretamente.
+            const amountInReais = paymentInfo.Amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
             return (
                 <div className="text-center">
                     <h1 className="text-2xl font-bold text-gray-800 mb-2">Finalize sua compra Starlink</h1>

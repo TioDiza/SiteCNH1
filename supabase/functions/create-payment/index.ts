@@ -25,7 +25,6 @@ serve(async (req) => {
       });
     }
 
-    // ASSUMPTION: Assumindo que a FuriaPay espera o valor em centavos e uma estrutura de payload similar.
     const furiaPayload = {
       amount,
       payment_method: 'pix',
@@ -42,9 +41,9 @@ serve(async (req) => {
     const furiaResponse = await createFuriaPayTransaction(furiaPayload);
     console.log('[create-payment] Received response from FuriaPay:', JSON.stringify(furiaResponse, null, 2));
 
-    // ASSUMPTION: Assumindo a estrutura da resposta para a chave PIX.
     const transactionData = furiaResponse.data || furiaResponse;
-    if (!transactionData || !transactionData.id || !transactionData.pix || !transactionData.pix.qrcode_text) {
+    // Ajustado para o formato da FuriaPay (Id, Pix, qrcode_text)
+    if (!transactionData || !transactionData.Id || !transactionData.Pix || !transactionData.Pix.QrCodeText) {
       console.error('[create-payment] Invalid response structure from FuriaPay:', furiaResponse);
       return new Response(JSON.stringify({ error: 'Resposta inválida do provedor de pagamento.' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -62,10 +61,10 @@ serve(async (req) => {
     const transactionToInsert = {
       lead_id: metadata.lead_id || null,
       starlink_customer_id: metadata.starlink_customer_id || null,
-      gateway_transaction_id: transactionData.id,
-      amount: transactionData.amount,
+      gateway_transaction_id: transactionData.Id,
+      amount: transactionData.Amount, // O valor da resposta já vem em Reais
       status: 'pending',
-      provider: 'furia_pay', // Nome do novo provedor
+      provider: 'furia_pay',
     };
 
     console.log('[create-payment] Attempting to insert transaction into database with data:', JSON.stringify(transactionToInsert));
@@ -83,12 +82,12 @@ serve(async (req) => {
         console.log(`[create-payment] Transaction saved to DB successfully. Internal ID: ${insertedTransaction.id}`);
     }
 
-    // ASSUMPTION: Assumindo a estrutura da resposta para o frontend.
+    // A resposta para o frontend deve ser consistente com o que ele espera
     const responseForFrontend = {
-        Id: transactionData.id,
-        Amount: transactionData.amount,
+        Id: transactionData.Id,
+        Amount: transactionData.Amount, // Enviando em Reais
         Pix: {
-            QrCodeText: transactionData.pix.qrcode_text,
+            QrCodeText: transactionData.Pix.QrCodeText,
         },
     };
     
