@@ -98,7 +98,7 @@ const StarlinkPaymentPage: React.FC = () => {
             } catch (e) {
                 console.error('Error invoking get-payment-status function:', e);
             }
-        }, 12000);
+        }, 15000);
 
         return () => clearInterval(interval);
     }, [paymentInfo, navigate]);
