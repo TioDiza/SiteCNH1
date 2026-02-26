@@ -24,7 +24,7 @@ export function getFuriaPayAuthHeader(): string {
  */
 export async function createFuriaPayTransaction(payload: object) {
   const authHeader = getFuriaPayAuthHeader();
-  const url = `${FURIAPAY_API_URL}/payment-transactions/create`;
+  const url = `${FURIAPAY_API_URL}/payment-transaction/create`;
 
   const response = await fetch(url, {
     method: 'POST',
