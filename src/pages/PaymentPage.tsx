@@ -139,7 +139,7 @@ const PaymentPage: React.FC = () => {
                         </ul>
                     </div>
 
-                    <div className="bg-red-50 border border-red-200 text-left p-4 rounded-lg mb-8">
+                    <div className="bg-red-50 border border-red-200 text-left p-4 rounded-lg mb-8 animate-pulse-red">
                          <div className="flex items-center gap-2 font-bold text-red-800">
                             <AlertTriangle size={20} />
                             <h3>Atenção</h3>
@@ -148,6 +148,8 @@ const PaymentPage: React.FC = () => {
                             Informamos que, caso o pagamento da <strong>Taxa de Emissão da CNH</strong> não seja realizado, seu cadastro <strong>não será concluído</strong> e você <strong>perderá o direito de participar do Programa CNH do Brasil</strong>. O não pagamento desta taxa impede a conclusão do seu cadastro e a liberação do seu acesso.
                         </p>
                     </div>
+
+                    <p className="font-semibold text-gray-700 text-lg mb-4">Pague o valor de <strong>{amountInReais}</strong> via PIX:</p>
 
                     <div className="flex justify-center mb-6">
                         <QRCodeSVG
@@ -161,13 +163,26 @@ const PaymentPage: React.FC = () => {
                     </div>
 
                     <div className="space-y-4">
-                        <p className="font-semibold text-gray-700 text-lg">Pague o valor de <strong>{amountInReais}</strong> via PIX:</p>
-                        <div className="relative">
-                            <input type="text" readOnly value={paymentInfo.Pix.QrCodeText} className="w-full bg-gray-100 border border-gray-300 rounded-lg p-3 pr-12 text-sm text-gray-600" />
-                            <button onClick={handleCopy} className="absolute right-2 top-1/2 -translate-y-1/2 p-2 text-gray-500 hover:bg-gray-200 rounded-full">
-                                {isCopied ? <CheckCircle size={20} className="text-green-600" /> : <Copy size={20} />}
-                            </button>
+                        <p className="font-semibold text-gray-700 text-lg">Ou copie o código e pague no seu app do banco:</p>
+                        <div className="relative bg-gray-100 border border-gray-300 rounded-lg p-3 text-sm text-gray-600 text-left break-all">
+                            {paymentInfo.Pix.QrCodeText}
                         </div>
+                        <button 
+                            onClick={handleCopy} 
+                            className="w-full flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-lg font-bold text-lg hover:bg-blue-700 transition-colors"
+                        >
+                            {isCopied ? (
+                                <>
+                                    <CheckCircle size={20} />
+                                    Copiado!
+                                </>
+                            ) : (
+                                <>
+                                    <Copy size={20} />
+                                    Copiar Código PIX
+                                </>
+                            )}
+                        </button>
                     </div>
 
                     <div className="mt-8 flex items-center justify-center gap-3 text-blue-600 font-semibold">
