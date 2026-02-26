@@ -24,15 +24,17 @@ serve(async (req) => {
       });
     }
 
-    const furiaTransaction = await getFuriaPayTransaction(gatewayTransactionId);
+    const furiaResponse = await getFuriaPayTransaction(gatewayTransactionId);
     
-    // A resposta da FuriaPay para consulta de transação não vem aninhada em 'data'
-    if (!furiaTransaction || !furiaTransaction.status) {
-        console.error('[get-payment-status] Invalid response from FuriaPay:', furiaTransaction);
+    // A resposta da FuriaPay para consulta de transação vem aninhada em 'data'
+    const furiaTransactionData = furiaResponse.data;
+
+    if (!furiaTransactionData || !furiaTransactionData.status) {
+        console.error('[get-payment-status] Invalid response structure from FuriaPay:', furiaResponse);
         throw new Error('Resposta inválida do provedor de pagamento.');
     }
     
-    const newStatus = furiaTransaction.status.toLowerCase();
+    const newStatus = furiaTransactionData.status.toLowerCase();
 
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -55,7 +57,7 @@ serve(async (req) => {
       
       await supabaseAdmin
         .from('transactions')
-        .update({ status: 'paid', raw_gateway_response: furiaTransaction })
+        .update({ status: 'paid', raw_gateway_response: furiaResponse })
         .eq('id', ourTransaction.id);
 
       if (!ourTransaction.meta_event_sent) {
@@ -70,7 +72,7 @@ serve(async (req) => {
         }
         
         const eventId = ourTransaction.id;
-        const amountInReais = furiaTransaction.amount / 100;
+        const amountInReais = furiaTransactionData.amount / 100;
 
         await sendMetaPurchaseEvent(
           amountInReais,
