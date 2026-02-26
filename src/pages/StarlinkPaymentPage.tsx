@@ -146,12 +146,6 @@ const StarlinkPaymentPage: React.FC = () => {
                         </div>
                     </div>
 
-                    <div className="mt-8 bg-gray-100 p-4 rounded-lg text-left text-sm space-y-2">
-                        <p><strong>Destinatário:</strong> {companyInfo.Name || 'Não informado'}</p>
-                        <p><strong>CNPJ:</strong> {companyInfo.Document?.Number ? companyInfo.Document.Number.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5') : 'Não informado'}</p>
-                        <p><strong>Instituição:</strong> {companyInfo.Bank?.Name || 'Não informado'}</p>
-                    </div>
-
                     <div className="mt-8 flex items-center justify-center gap-3 text-blue-600 font-semibold">
                         <Clock size={20} />
                         <p>Aguardando confirmação do pagamento...</p>
