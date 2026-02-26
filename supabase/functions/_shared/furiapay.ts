@@ -64,7 +64,6 @@ export async function createFuriaPayTransaction(payload: object) {
  */
 export async function getFuriaPayCompanyData() {
     const authHeader = getFuriaPayAuthHeader();
-    // ASSUMPTION: Assumindo que o endpoint para dados da empresa é /company
     const url = `${FURIAPAY_API_URL}/company`;
 
     const response = await fetch(url, {
@@ -83,4 +82,31 @@ export async function getFuriaPayCompanyData() {
     }
 
     return data;
+}
+
+/**
+ * Busca informações de uma transação na FuriaPay.
+ * @param transactionId - O ID da transação.
+ * @returns Os dados da transação.
+ */
+export async function getFuriaPayTransaction(transactionId: string) {
+  const authHeader = getFuriaPayAuthHeader();
+  const url = `${FURIAPAY_API_URL}/payment-transaction/info/${transactionId}`;
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Authorization': authHeader,
+      'accept': 'application/json',
+    },
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    console.error(`[getFuriaPayTransaction] Falha ao buscar transação ${transactionId} na FuriaPay:`, response.status, data);
+    throw new Error(data.message || 'Falha na comunicação com o provedor de pagamento.');
+  }
+
+  return data;
 }

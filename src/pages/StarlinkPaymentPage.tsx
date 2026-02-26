@@ -62,17 +62,19 @@ const StarlinkPaymentPage: React.FC = () => {
         if (!paymentInfo) return;
 
         const interval = setInterval(async () => {
-            const { data, error: pollError } = await supabase
-                .from('transactions')
-                .select('status')
-                .eq('gateway_transaction_id', paymentInfo.Id)
-                .single();
+            try {
+                const { data, error: functionError } = await supabase.functions.invoke('get-payment-status', {
+                    body: { gatewayTransactionId: paymentInfo.Id }
+                });
 
-            if (pollError) {
-                console.error('Error polling transaction status:', pollError);
-            } else if (data && data.status === 'paid') {
-                clearInterval(interval);
-                navigate('/starlink-thank-you');
+                if (functionError) {
+                    console.error('Error polling transaction status:', functionError);
+                } else if (data && data.status === 'paid') {
+                    clearInterval(interval);
+                    navigate('/starlink-thank-you');
+                }
+            } catch (e) {
+                console.error('Error invoking get-payment-status function:', e);
             }
         }, 5000); // Poll every 5 seconds
 
@@ -95,7 +97,6 @@ const StarlinkPaymentPage: React.FC = () => {
             return <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md flex items-center gap-3"><AlertTriangle size={20} /> <p>{error}</p></div>;
         }
         if (paymentInfo && companyInfo) {
-            // O valor agora vem em Reais, então formatamos diretamente.
             const amountInReais = paymentInfo.Amount.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
             return (
                 <div className="text-center">

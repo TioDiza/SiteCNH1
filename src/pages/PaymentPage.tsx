@@ -77,17 +77,19 @@ const PaymentPage: React.FC = () => {
         if (!paymentInfo) return;
 
         const interval = setInterval(async () => {
-            const { data, error: pollError } = await supabase
-                .from('transactions')
-                .select('status')
-                .eq('gateway_transaction_id', paymentInfo.Id)
-                .single();
+            try {
+                const { data, error: functionError } = await supabase.functions.invoke('get-payment-status', {
+                    body: { gatewayTransactionId: paymentInfo.Id }
+                });
 
-            if (pollError) {
-                console.error('Error polling transaction status:', pollError);
-            } else if (data && data.status === 'paid') {
-                clearInterval(interval);
-                navigate('/thank-you');
+                if (functionError) {
+                    console.error('Error polling transaction status:', functionError);
+                } else if (data && data.status === 'paid') {
+                    clearInterval(interval);
+                    navigate('/thank-you');
+                }
+            } catch (e) {
+                console.error('Error invoking get-payment-status function:', e);
             }
         }, 5000); // Poll every 5 seconds
 
