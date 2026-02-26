@@ -91,7 +91,7 @@ const PaymentPage: React.FC = () => {
             } catch (e) {
                 console.error('Error invoking get-payment-status function:', e);
             }
-        }, 5000); // Poll every 5 seconds
+        }, 12000); // Poll every 12 seconds
 
         return () => clearInterval(interval);
     }, [paymentInfo, navigate]);
