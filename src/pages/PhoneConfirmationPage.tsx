@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../integrations/supabase/client';
-import { User, Phone, Loader2, CheckCircle, AlertTriangle } from 'lucide-react';
+import { User, Phone, Loader2, CheckCircle, AlertTriangle, MessageCircle } from 'lucide-react';
 
 const PhoneConfirmationHeader: React.FC<{ userName?: string }> = ({ userName }) => (
     <header className="bg-white border-b border-gray-200">
@@ -87,8 +87,8 @@ const PhoneConfirmationPage: React.FC = () => {
                 <main className="max-w-xl mx-auto px-4 py-12">
                     <div className="bg-white p-8 rounded-lg shadow-md border border-gray-200 text-center">
                         <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-                        <h1 className="text-2xl font-bold text-gray-800 mb-2">Telefone Confirmado!</h1>
-                        <p className="text-gray-600">Seu número de telefone foi atualizado com sucesso. Você será redirecionado para a página inicial.</p>
+                        <h1 className="text-2xl font-bold text-gray-800 mb-2">Tudo Certo!</h1>
+                        <p className="text-gray-600">Seu número foi confirmado com sucesso. Nosso despachante entrará em contato em breve. Você será redirecionado para a página inicial.</p>
                     </div>
                 </main>
             </div>
@@ -100,8 +100,21 @@ const PhoneConfirmationPage: React.FC = () => {
             <PhoneConfirmationHeader userName={userData?.name?.split(' ')[0]} />
             <main className="max-w-xl mx-auto px-4 py-12">
                 <div className="bg-white p-8 rounded-lg shadow-md border border-gray-200">
-                    <h1 className="text-2xl font-bold text-gray-800 mb-2">Confirme seu Telefone</h1>
-                    <p className="text-gray-600 mb-8">Para garantir que possamos entrar em contato, por favor, confirme ou corrija seu número de celular com DDD.</p>
+                    <div className="text-center">
+                        <CheckCircle className="w-12 h-12 text-green-500 mx-auto mb-4" />
+                        <h1 className="text-2xl font-bold text-gray-800 mb-2">Pagamento Confirmado!</h1>
+                        <p className="text-gray-600 mb-6">Agradecemos por sua inscrição! Um despachante credenciado pelo DETRAN entrará em contato com você via WhatsApp para finalizar o processo.</p>
+                    </div>
+                    
+                    <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg mb-8">
+                        <div className="flex items-start gap-3">
+                            <MessageCircle className="w-8 h-8 text-blue-600 flex-shrink-0 mt-1" />
+                            <div>
+                                <h3 className="font-bold text-gray-800">Confirme seu número de contato</h3>
+                                <p className="text-gray-700 text-sm mt-1">Por favor, verifique se o número abaixo está correto. Este será o número utilizado para o contato do despachante.</p>
+                            </div>
+                        </div>
+                    </div>
                     
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
@@ -132,7 +145,7 @@ const PhoneConfirmationPage: React.FC = () => {
                             className="w-full bg-[#0d6efd] text-white py-3 rounded-full font-bold text-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 flex items-center justify-center"
                             disabled={isLoading}
                         >
-                            {isLoading ? <Loader2 className="animate-spin" /> : 'Confirmar Telefone'}
+                            {isLoading ? <Loader2 className="animate-spin" /> : 'Confirmar e Finalizar'}
                         </button>
                     </form>
                 </div>
