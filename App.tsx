@@ -24,6 +24,7 @@ import StarlinkCheckoutPage from './src/pages/StarlinkCheckoutPage';
 import PaymentPage from './src/pages/PaymentPage';
 import StarlinkPaymentPage from './src/pages/StarlinkPaymentPage';
 import StarlinkThankYouPage from './src/pages/StarlinkThankYouPage';
+import PhoneConfirmationPage from './src/pages/PhoneConfirmationPage';
 
 const App: React.FC = () => {
   return (
@@ -46,6 +47,7 @@ const App: React.FC = () => {
         <Route path="/pre-payment-info" element={<PrePaymentInfoPage />} />
         <Route path="/payment" element={<PaymentPage />} />
         <Route path="/thank-you" element={<ThankYouPage />} />
+        <Route path="/phone-confirmation" element={<PhoneConfirmationPage />} />
 
         {/* Starlink Routes */}
         <Route path="/starlink-checkout" element={<StarlinkCheckoutPage />} />
