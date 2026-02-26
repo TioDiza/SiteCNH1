@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '../integrations/supabase/client';
 import * as qrcode from 'qrcode.react';
 import { User, Loader2, AlertTriangle, Copy, CheckCircle, Clock, Wifi } from 'lucide-react';
@@ -23,7 +23,6 @@ const PaymentHeader: React.FC<{ userName?: string }> = ({ userName }) => (
 
 const StarlinkPaymentPage: React.FC = () => {
     const navigate = useNavigate();
-    const location = useLocation();
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [paymentInfo, setPaymentInfo] = useState<any>(null);
@@ -32,31 +31,53 @@ const StarlinkPaymentPage: React.FC = () => {
     const [userName, setUserName] = useState('');
 
     useEffect(() => {
-        const { paymentInfo: pi, userName: un } = location.state || {};
+        const createPayment = async () => {
+            const customerDataString = sessionStorage.getItem('starlink_customerData');
+            if (!customerDataString) {
+                setError("Sessão expirada. Por favor, preencha seus dados novamente.");
+                setIsLoading(false);
+                setTimeout(() => navigate('/starlink-checkout'), 3000);
+                return;
+            }
+            const customerData = JSON.parse(customerDataString);
+            setUserName(customerData.name.split(' ')[0]);
 
-        if (!pi || !un) {
-            setError("Dados de pagamento inválidos. Por favor, tente novamente.");
-            setIsLoading(false);
-            return;
-        }
-
-        setPaymentInfo(pi);
-        setUserName(un);
-
-        const fetchCompanyInfo = async () => {
             try {
                 const { data: companyData, error: companyError } = await supabase.functions.invoke('get-company-data');
                 if (companyError) throw new Error("Não foi possível obter os dados para pagamento.");
                 setCompanyInfo(companyData);
+
+                const paymentPayload = {
+                    amount: 23690, // R$ 236,90
+                    customer: {
+                        name: customerData.name,
+                        email: customerData.email,
+                        document: { type: 'cpf', number: customerData.cpf.replace(/\D/g, '') },
+                        phone: customerData.phone.replace(/\D/g, ''),
+                    },
+                    items: [{ 
+                        title: 'Kit Antena Starlink - Taxa de Adesão Promocional', 
+                        unit_price: 23690, 
+                        quantity: 1,
+                        tangible: true
+                    }],
+                    metadata: { starlink_customer_id: customerData.id, product: 'starlink_kit' },
+                };
+
+                const { data: paymentData, error: paymentError } = await supabase.functions.invoke('create-payment', { body: paymentPayload });
+                if (paymentError) throw paymentError;
+                setPaymentInfo(paymentData);
+
             } catch (err: any) {
-                setError(err.message || "Ocorreu um erro ao buscar dados do recebedor.");
+                console.error("Erro ao criar pagamento Starlink:", err);
+                setError(err.message || "Ocorreu um erro ao gerar o PIX. Tente novamente.");
             } finally {
                 setIsLoading(false);
             }
         };
 
-        fetchCompanyInfo();
-    }, [location.state]);
+        createPayment();
+    }, [navigate]);
 
     useEffect(() => {
         if (!paymentInfo) return;
@@ -71,12 +92,13 @@ const StarlinkPaymentPage: React.FC = () => {
                     console.error('Error polling transaction status:', functionError);
                 } else if (data && data.status === 'paid') {
                     clearInterval(interval);
+                    sessionStorage.removeItem('starlink_customerData');
                     navigate('/starlink-thank-you');
                 }
             } catch (e) {
                 console.error('Error invoking get-payment-status function:', e);
             }
-        }, 5000); // Poll every 5 seconds
+        }, 5000);
 
         return () => clearInterval(interval);
     }, [paymentInfo, navigate]);

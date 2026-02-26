@@ -89,35 +89,12 @@ const StarlinkCheckoutPage: React.FC = () => {
                 throw upsertError;
             }
 
-            const paymentPayload = {
-                amount: 23690, // R$ 236,90
-                customer: {
-                    name: customerData.name,
-                    email: customerData.email,
-                    document: { type: 'cpf', number: customerData.cpf.replace(/\D/g, '') },
-                    phone: customerData.phone.replace(/\D/g, ''),
-                },
-                items: [{ 
-                    title: 'Kit Antena Starlink - Taxa de Adesão Promocional', 
-                    unit_price: 23690, 
-                    quantity: 1,
-                    tangible: true
-                }],
-                metadata: { starlink_customer_id: customerData.id, product: 'starlink_kit' },
-            };
-
-            const { data: paymentData, error: paymentError } = await supabase.functions.invoke('create-payment', { body: paymentPayload });
-
-            if (paymentError) {
-                throw paymentError;
-            }
-
-            navigate('/starlink-payment', { state: { paymentInfo: paymentData, userName: customerData.name.split(' ')[0] } });
+            sessionStorage.setItem('starlink_customerData', JSON.stringify(customerData));
+            navigate('/starlink-payment');
 
         } catch (err: any) {
             setIsLoading(false);
             console.error("Erro no processo de checkout:", err);
-            // Tenta extrair uma mensagem de erro mais específica da resposta da função
             const functionError = err.context?.data?.error || err.context?.error || err.message;
             setError(functionError || "Ocorreu um erro. Tente novamente.");
         }
