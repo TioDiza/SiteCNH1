@@ -60,8 +60,11 @@ serve(async (req) => {
         }
         
         const eventId = ourTransaction.id;
+        // O valor da API vem em centavos, convertemos para Reais para o evento da Meta
+        const amountInReais = furiaTransaction.amount / 100;
+
         await sendMetaPurchaseEvent(
-          furiaTransaction.amount,
+          amountInReais,
           'BRL',
           eventId,
           userDataForMeta,

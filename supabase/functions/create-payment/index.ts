@@ -26,7 +26,7 @@ serve(async (req) => {
     }
 
     const furiaPayload = {
-      amount,
+      amount, // O valor deve ser enviado em centavos
       payment_method: 'pix',
       postback_url: WEBHOOK_URL,
       customer,
@@ -41,9 +41,11 @@ serve(async (req) => {
     const furiaResponse = await createFuriaPayTransaction(furiaPayload);
     console.log('[create-payment] Received response from FuriaPay:', JSON.stringify(furiaResponse, null, 2));
 
-    const transactionData = furiaResponse.data || furiaResponse;
-    // Ajustado para o formato da FuriaPay (Id, Pix, qrcode_text)
-    if (!transactionData || !transactionData.Id || !transactionData.Pix || !transactionData.Pix.QrCodeText) {
+    // A resposta da FuriaPay vem em { data: [ { ... } ] }
+    const transactionData = furiaResponse.data && furiaResponse.data[0];
+    const pixData = transactionData && transactionData.pix && transactionData.pix[0];
+
+    if (!transactionData || !transactionData.id || !pixData || !pixData.qr_code) {
       console.error('[create-payment] Invalid response structure from FuriaPay:', furiaResponse);
       return new Response(JSON.stringify({ error: 'Resposta inválida do provedor de pagamento.' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -58,11 +60,14 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
+    // A resposta da API vem em centavos, convertemos para Reais para salvar no banco
+    const amountInReais = transactionData.amount / 100;
+
     const transactionToInsert = {
       lead_id: metadata.lead_id || null,
       starlink_customer_id: metadata.starlink_customer_id || null,
-      gateway_transaction_id: transactionData.Id,
-      amount: transactionData.Amount, // O valor da resposta já vem em Reais
+      gateway_transaction_id: transactionData.id,
+      amount: amountInReais,
       status: 'pending',
       provider: 'furia_pay',
     };
@@ -82,12 +87,12 @@ serve(async (req) => {
         console.log(`[create-payment] Transaction saved to DB successfully. Internal ID: ${insertedTransaction.id}`);
     }
 
-    // A resposta para o frontend deve ser consistente com o que ele espera
+    // A resposta para o frontend deve ser consistente
     const responseForFrontend = {
-        Id: transactionData.Id,
-        Amount: transactionData.Amount, // Enviando em Reais
+        Id: transactionData.id,
+        Amount: amountInReais, // Enviando em Reais
         Pix: {
-            QrCodeText: transactionData.Pix.QrCodeText,
+            QrCodeText: pixData.qr_code,
         },
     };
     
