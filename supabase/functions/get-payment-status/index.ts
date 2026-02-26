@@ -26,12 +26,13 @@ serve(async (req) => {
 
     const furiaTransaction = await getFuriaPayTransaction(gatewayTransactionId);
     
-    if (!furiaTransaction || !furiaTransaction.data || !furiaTransaction.data.status) {
+    // A resposta da FuriaPay para consulta de transação não vem aninhada em 'data'
+    if (!furiaTransaction || !furiaTransaction.status) {
         console.error('[get-payment-status] Invalid response from FuriaPay:', furiaTransaction);
         throw new Error('Resposta inválida do provedor de pagamento.');
     }
     
-    const newStatus = furiaTransaction.data.status.toLowerCase();
+    const newStatus = furiaTransaction.status.toLowerCase();
 
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -65,12 +66,11 @@ serve(async (req) => {
           userDataForMeta.em = ourTransaction.leads.email?.toLowerCase();
           userDataForMeta.ph = ourTransaction.leads.phone?.replace(/\D/g, '');
         } else if (ourTransaction.starlink_customers) {
-          // Starlink customers don't have an email in the DB, so we only send the phone
           userDataForMeta.ph = ourTransaction.starlink_customers.phone?.replace(/\D/g, '');
         }
         
         const eventId = ourTransaction.id;
-        const amountInReais = furiaTransaction.data.amount / 100;
+        const amountInReais = furiaTransaction.amount / 100;
 
         await sendMetaPurchaseEvent(
           amountInReais,

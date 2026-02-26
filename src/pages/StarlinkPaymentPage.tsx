@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../integrations/supabase/client';
-import QRCode from 'qrcode.react';
+import { QRCodeSVG } from 'qrcode.react';
 import { User, Loader2, AlertTriangle, Copy, CheckCircle, Clock, Wifi } from 'lucide-react';
 
 const PaymentHeader: React.FC<{ userName?: string }> = ({ userName }) => (
@@ -126,14 +126,13 @@ const StarlinkPaymentPage: React.FC = () => {
                     <p className="text-gray-600 mb-6">Para garantir sua antena, pague o valor de <strong>{amountInReais}</strong> via PIX.</p>
                     
                     <div className="flex justify-center mb-6">
-                        <QRCode
+                        <QRCodeSVG
                             value={paymentInfo.Pix.QrCodeText}
                             size={256}
                             bgColor="#ffffff"
                             fgColor="#000000"
                             level="L"
                             includeMargin={false}
-                            renderAs="svg"
                         />
                     </div>
 
