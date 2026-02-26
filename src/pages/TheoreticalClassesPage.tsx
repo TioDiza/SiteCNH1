@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { User } from 'lucide-react';
 
@@ -27,12 +27,29 @@ const TheoreticalClassesHeader: React.FC<{ userName?: string }> = ({ userName })
 const TheoreticalClassesPage: React.FC = () => {
     const navigate = useNavigate();
     const location = useLocation();
-    const userData = location.state?.userData as { name: string } | undefined;
+    const [userData, setUserData] = useState(() => {
+        const fromState = location.state?.userData;
+        if (fromState) return fromState;
+        const fromStorage = sessionStorage.getItem('cnh_userData');
+        return fromStorage ? JSON.parse(fromStorage) : null;
+    });
+
+    useEffect(() => {
+        if (!userData) {
+            console.error("TheoreticalClassesPage: Missing user data. Redirecting to login.");
+            navigate('/login');
+        }
+    }, [userData, navigate]);
+
     const firstName = userData?.name.split(' ')[0];
 
     const handleNext = () => {
-        navigate('/cnh-issuance', { state: { userData: location.state?.userData } });
+        navigate('/cnh-issuance', { state: { userData: userData } });
     };
+
+    if (!userData) {
+        return null; // or a loading spinner
+    }
 
     return (
         <div className="bg-gray-50 min-h-screen">
