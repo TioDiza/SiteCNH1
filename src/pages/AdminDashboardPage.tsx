@@ -37,6 +37,7 @@ interface StarlinkCustomer {
         neighborhood: string;
         city: string;
         state: string;
+        contact_status?: string;
     } | null;
     created_at: string;
     transactions: { status: string, created_at: string }[];
@@ -160,7 +161,12 @@ const AdminDashboardPage: React.FC = () => {
             // Fetch Starlink Data
             const { data: starlinkData, error: starlinkError } = await supabase.from('starlink_customers').select('*, transactions(status, created_at)').order('created_at', { ascending: false });
             if (starlinkError) throw starlinkError;
-            setStarlinkCustomers(starlinkData as StarlinkCustomer[]);
+            
+            const mappedStarlinkData = starlinkData.map(customer => ({
+                ...customer,
+                contact_status: customer.address?.contact_status || 'Aguardando Contato'
+            }));
+            setStarlinkCustomers(mappedStarlinkData as StarlinkCustomer[]);
 
         } catch (err: any) {
             console.error("Erro ao buscar dados:", err);
@@ -237,18 +243,29 @@ const AdminDashboardPage: React.FC = () => {
         }
     };
 
-    const handleUpdateStarlinkContactStatus = async (customerId: string, currentStatus: string) => {
+    const handleUpdateStarlinkContactStatus = async (customer: StarlinkCustomer) => {
+        const currentStatus = customer.contact_status || 'Aguardando Contato';
         const newStatus = currentStatus === 'Aguardando Contato' ? 'Contato Realizado' : 'Aguardando Contato';
-        setStarlinkCustomers(prev => prev.map(c => c.id === customerId ? { ...c, contact_status: newStatus } : c));
-        const { error: updateError } = await supabase.from('starlink_customers').update({ contact_status: newStatus }).eq('id', customerId);
+        
+        setStarlinkCustomers(prev => prev.map(c => c.id === customer.id ? { ...c, contact_status: newStatus } : c));
+
+        const { contact_status, ...restOfAddress } = customer.address || {};
+        const newAddress = { ...restOfAddress, contact_status: newStatus };
+
+        const { error: updateError } = await supabase
+            .from('starlink_customers')
+            .update({ address: newAddress })
+            .eq('id', customer.id);
+        
         if (updateError) {
+            console.error("Starlink status update error:", updateError);
             setError("Falha ao atualizar o status do cliente Starlink.");
-            setStarlinkCustomers(prev => prev.map(c => c.id === customerId ? { ...c, contact_status: currentStatus } : c));
+            setStarlinkCustomers(prev => prev.map(c => c.id === customer.id ? { ...c, contact_status: currentStatus } : c));
         }
     };
 
     const handleBulkUpdateStarlinkContactStatus = async (newStatus: 'Contato Realizado' | 'Aguardando Contato') => {
-        const customersToUpdate = starlinkCustomers.map(c => c.id);
+        const customersToUpdate = starlinkCustomers;
         if (customersToUpdate.length === 0) {
             alert("Não há clientes para atualizar.");
             return;
@@ -257,14 +274,33 @@ const AdminDashboardPage: React.FC = () => {
             return;
         }
         setLoading(true);
-        const { error: functionError } = await supabase.functions.invoke('bulk-update-starlink-customers-status', {
-            body: { customerIds: customersToUpdate, status: newStatus },
+        setError(null);
+
+        const updates = customersToUpdate.map(customer => {
+            const { contact_status, ...restOfAddress } = customer.address || {};
+            const newAddress = { ...restOfAddress, contact_status: newStatus };
+            return supabase
+                .from('starlink_customers')
+                .update({ address: newAddress })
+                .eq('id', customer.id);
         });
-        setLoading(false);
-        if (functionError) {
-            setError("Falha ao atualizar os status em massa.");
-        } else {
+
+        try {
+            const results = await Promise.all(updates);
+            const failedUpdates = results.filter(res => res.error);
+
+            if (failedUpdates.length > 0) {
+                console.error("Bulk update failures:", failedUpdates.map(f => f.error));
+                throw new Error(`Falha ao atualizar ${failedUpdates.length} cliente(s).`);
+            }
+            
             setStarlinkCustomers(prev => prev.map(c => ({ ...c, contact_status: newStatus })));
+
+        } catch (err: any) {
+            setError(err.message);
+            fetchData();
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -409,7 +445,7 @@ const AdminDashboardPage: React.FC = () => {
                                                 <td className="px-4 py-4"><span className={`px-2 py-1 rounded-full text-xs font-semibold ${c.contact_status === 'Contato Realizado' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>{c.contact_status || 'Aguardando Contato'}</span></td>
                                                 <td className="px-4 py-4">
                                                     <div className="flex items-center gap-2">
-                                                        <button onClick={() => handleUpdateStarlinkContactStatus(c.id, c.contact_status || 'Aguardando Contato')} className={`p-2 rounded-full transition-colors ${(c.contact_status || 'Aguardando Contato') === 'Aguardando Contato' ? 'text-blue-500 hover:bg-blue-100' : 'text-gray-500 hover:bg-gray-200'}`}>
+                                                        <button onClick={() => handleUpdateStarlinkContactStatus(c)} className={`p-2 rounded-full transition-colors ${(c.contact_status || 'Aguardando Contato') === 'Aguardando Contato' ? 'text-blue-500 hover:bg-blue-100' : 'text-gray-500 hover:bg-gray-200'}`}>
                                                             {(c.contact_status || 'Aguardando Contato') === 'Aguardando Contato' ? <MessageSquare size={16}/> : <CheckSquare size={16}/>}
                                                         </button>
                                                         <button onClick={() => handleDeleteStarlinkCustomer(c.id, c.name)} className="p-2 text-red-500 hover:bg-red-100 rounded-full transition-colors">
