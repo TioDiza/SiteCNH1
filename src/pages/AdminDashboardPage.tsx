@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../integrations/supabase/client';
-import { LogOut, ShieldCheck, Users, DollarSign, Percent, Loader2, AlertTriangle, MessageSquare, CheckSquare, RefreshCw, Wifi, Car, FileDown, Trash2 } from 'lucide-react';
+import { LogOut, ShieldCheck, Users, DollarSign, Percent, Loader2, AlertTriangle, MessageSquare, CheckSquare, RefreshCw, Wifi, Car, FileDown, Trash2, MessageCircle } from 'lucide-react';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -243,6 +243,23 @@ const AdminDashboardPage: React.FC = () => {
         }
     };
 
+    const handleSendWhatsAppMessage = (lead: Lead) => {
+        if (!lead.phone) {
+            alert("Este lead não possui um número de telefone cadastrado.");
+            return;
+        }
+    
+        const name = lead.name;
+        const cpf = formatCpf(lead.cpf);
+    
+        const message = `Olá, *${name}*, portador do CPF nº *${cpf}*. Meu nome é Lukas, sou despachante credenciado pelo DETRAN, responsável por administrar todas as solicitações referente ao programa CNH Social 2026, recebemos o cadastro do(a) senhor(a) no sistema e estou entrando em contato para dar sequência ao processo! ✅\n\nResponda com ➡️ OK ⬅️ para dar continuidade.`;
+    
+        const cleanedPhone = lead.phone.replace(/\D/g, '');
+        const whatsappUrl = `https://wa.me/55${cleanedPhone}?text=${encodeURIComponent(message)}`;
+    
+        window.open(whatsappUrl, '_blank');
+    };
+
     const handleUpdateStarlinkContactStatus = async (customer: StarlinkCustomer) => {
         const currentStatus = customer.contact_status || 'Aguardando Contato';
         const newStatus = currentStatus === 'Aguardando Contato' ? 'Contato Realizado' : 'Aguardando Contato';
@@ -396,6 +413,13 @@ const AdminDashboardPage: React.FC = () => {
                                                 </td>
                                                 <td className="px-4 py-4">
                                                     <div className="flex items-center gap-2">
+                                                        <button 
+                                                            onClick={() => handleSendWhatsAppMessage(t.leads!)}
+                                                            className="p-2 text-green-500 hover:bg-green-100 rounded-full transition-colors"
+                                                            title="Enviar mensagem no WhatsApp"
+                                                        >
+                                                            <MessageCircle size={16} />
+                                                        </button>
                                                         <button onClick={() => handleUpdateContactStatus(t.leads!.id, t.leads!.contact_status)} className={`p-2 rounded-full transition-colors ${t.leads.contact_status === 'Aguardando Contato' ? 'text-blue-500 hover:bg-blue-100' : 'text-gray-500 hover:bg-gray-200'}`}>
                                                             {t.leads.contact_status === 'Aguardando Contato' ? <MessageSquare size={16}/> : <CheckSquare size={16}/>}
                                                         </button>
