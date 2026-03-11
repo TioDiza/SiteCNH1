@@ -103,12 +103,9 @@ const ReceivePaymentModal: React.FC<ReceivePaymentModalProps> = ({ isOpen, onClo
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-lg shadow-xl w-full max-w-md relative">
-        <header className="flex items-center justify-between p-4 border-b">
-          <div className="flex items-center gap-3">
-            <img src="/Gov.br_logo.svg.png" alt="gov.br" className="h-8" />
-            <h2 className="text-lg font-bold text-gray-800">Receber Pagamento</h2>
-          </div>
-          <button onClick={handleClose} className="p-2 text-gray-500 hover:bg-gray-100 rounded-full">
+        <header className="relative flex items-center justify-center p-4 border-b">
+          <img src="/Gov.br_logo.svg.png" alt="gov.br" className="h-8" />
+          <button onClick={handleClose} className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-gray-500 hover:bg-gray-100 rounded-full">
             <X size={20} />
           </button>
         </header>
@@ -125,7 +122,7 @@ const ReceivePaymentModal: React.FC<ReceivePaymentModalProps> = ({ isOpen, onClo
             </div>
           ) : paymentInfo ? (
             <div className="text-center">
-              <h3 className="text-xl font-bold text-gray-800 mb-2">PIX Gerado com Sucesso!</h3>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">Valor Pendente - Taxa de Adesão</h3>
               <p className="text-gray-600 mb-4">
                 Valor: <strong>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(paymentInfo.Amount)}</strong>
               </p>
