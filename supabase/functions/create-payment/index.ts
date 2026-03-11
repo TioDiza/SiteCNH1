@@ -17,7 +17,9 @@ serve(async (req) => {
   try {
     const { amount, customer, items, metadata } = await req.json();
 
-    if (!amount || !customer || !items || !metadata || (!metadata.lead_id && !metadata.starlink_customer_id)) {
+    const isAdminPayment = metadata && metadata.source === 'admin_dashboard';
+
+    if (!amount || !customer || !items || !metadata || (!isAdminPayment && !metadata.lead_id && !metadata.starlink_customer_id)) {
       console.error('[create-payment] Missing required fields in request body.');
       return new Response(JSON.stringify({ error: 'Dados insuficientes para criar a transação.' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
