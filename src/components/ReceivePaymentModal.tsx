@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { supabase } from '../integrations/supabase/client';
 import { useAuth } from '../contexts/AuthContext';
-import { QRCodeSVG } from 'qrcode.react';
-import { X, Loader2, AlertTriangle, Copy, CheckCircle, DollarSign } from 'lucide-react';
+import { QRCodeCanvas } from 'qrcode.react';
+import jsPDF from 'jspdf';
+import { X, Loader2, AlertTriangle, Copy, CheckCircle, DollarSign, FileDown } from 'lucide-react';
 
 interface ReceivePaymentModalProps {
   isOpen: boolean;
@@ -89,6 +90,47 @@ const ReceivePaymentModal: React.FC<ReceivePaymentModalProps> = ({ isOpen, onClo
     }
   };
 
+  const handleDownloadPDF = () => {
+    if (!paymentInfo) return;
+
+    const doc = new jsPDF({ orientation: 'p', unit: 'px', format: [280, 420] });
+    const canvas = document.getElementById('qr-code-canvas') as HTMLCanvasElement;
+    if (!canvas) {
+        console.error("QR Code Canvas não encontrado");
+        return;
+    }
+    const qrCodeDataUrl = canvas.toDataURL('image/png');
+    const amountFormatted = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(paymentInfo.Amount);
+
+    const logoImg = new Image();
+    logoImg.src = '/Gov.br_logo.svg.png';
+    logoImg.onload = () => {
+        doc.addImage(logoImg, 'PNG', 110, 20, 60, 15);
+        doc.setFontSize(14);
+        doc.setFont('helvetica', 'bold');
+        doc.text('Valor Pendente - Taxa de Adesão', 140, 60, { align: 'center' });
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'normal');
+        doc.text(`Valor: ${amountFormatted}`, 140, 75, { align: 'center' });
+        doc.addImage(qrCodeDataUrl, 'PNG', 80, 90, 120, 120);
+        doc.setFillColor(243, 244, 246);
+        doc.setDrawColor(209, 213, 219);
+        doc.roundedRect(30, 225, 220, 70, 5, 5, 'FD');
+        doc.setFontSize(8);
+        doc.setTextColor(107, 114, 128);
+        const pixKey = paymentInfo.Pix.QrCodeText;
+        const splitText = doc.splitTextToSize(pixKey, 210);
+        doc.text(splitText, 35, 235);
+        doc.setFillColor(13, 110, 253);
+        doc.roundedRect(30, 310, 220, 30, 5, 5, 'F');
+        doc.setFontSize(10);
+        doc.setFont('helvetica', 'bold');
+        doc.setTextColor(255, 255, 255);
+        doc.text('Copiar Código PIX', 140, 328, { align: 'center' });
+        doc.save('pagamento-pix-govbr.pdf');
+    };
+  };
+
   const handleClose = () => {
     setAmount('');
     setError(null);
@@ -127,13 +169,23 @@ const ReceivePaymentModal: React.FC<ReceivePaymentModalProps> = ({ isOpen, onClo
                 Valor: <strong>{new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(paymentInfo.Amount)}</strong>
               </p>
               <div className="flex justify-center mb-4">
-                <QRCodeSVG value={paymentInfo.Pix.QrCodeText} size={200} />
+                <QRCodeCanvas
+                  id="qr-code-canvas"
+                  value={paymentInfo.Pix.QrCodeText}
+                  size={200}
+                  bgColor="#ffffff"
+                  fgColor="#000000"
+                  level="L"
+                />
               </div>
               <div className="relative bg-gray-100 border border-gray-300 rounded-lg p-3 text-sm text-gray-600 text-left break-all">
                 {paymentInfo.Pix.QrCodeText}
               </div>
               <button onClick={handleCopy} className="w-full mt-3 flex items-center justify-center gap-2 bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition-colors">
                 {isCopied ? <><CheckCircle size={20} /> Copiado!</> : <><Copy size={20} /> Copiar Código PIX</>}
+              </button>
+              <button onClick={handleDownloadPDF} className="w-full mt-3 flex items-center justify-center gap-2 bg-gray-700 text-white py-3 rounded-lg font-bold hover:bg-gray-800 transition-colors">
+                <FileDown size={20} /> Baixar PDF
               </button>
             </div>
           ) : (
